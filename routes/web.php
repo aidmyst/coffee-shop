@@ -37,8 +37,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard Kasir
     Route::get('/dashboard', [OrderController::class, 'adminDashboard'])->name('dashboard');
     Route::post('/orders/{id}/complete', [OrderController::class, 'complete'])->name('orders.complete');
-    Route::get('/casshier/reports/history', [OrderController::class, 'history'])->name('casshier.reports.history');
-    Route::get('/casshier/pos/order', [OrderController::class, 'order'])->name('casshier.pos.order');
+    Route::get('/cashier/reports/history', [OrderController::class, 'history'])->name('cashier.reports.history');
+    Route::get('/cashier/pos/order', [OrderController::class, 'order'])->name('cashier.pos.order');
     Route::get('/order/print/{id}', [OrderController::class, 'print'])->name('order.print');
 
     // Profile

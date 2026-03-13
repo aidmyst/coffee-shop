@@ -21,7 +21,7 @@ class CafeController extends Controller
         }
 
         // Default untuk Kasir
-        return view('admin.dashboard_kasir', compact('orders'));
+        return view('admin.dashboard_cashier', compact('orders'));
     }
 
     // Tambahkan fungsi untuk menyelesaikan pesanan agar rute di web.php tidak error

@@ -1,3 +1,3 @@
 <x-app-layout>
-    @livewire('casshier')
+    @livewire('cashier')
 </x-app-layout>

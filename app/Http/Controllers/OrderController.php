@@ -40,7 +40,7 @@ class OrderController extends Controller
             ->latest()
             ->get();
 
-        return view('casshier.dashboard_kasir', compact('orders'));
+        return view('cashier.dashboard_cashier', compact('orders'));
     }
 
     public function history()
@@ -51,8 +51,8 @@ class OrderController extends Controller
             ->latest()
             ->get();
 
-        // PASTIKAN baris ini mengarah ke file history, bukan dashboard_kasir
-        return view('casshier.reports.history', compact('orders'));
+        // PASTIKAN baris ini mengarah ke file history, bukan dashboard_cashier
+        return view('cashier.reports.history', compact('orders'));
     }
 
     public function exportDaily(Request $request)
@@ -196,7 +196,7 @@ class OrderController extends Controller
         }
 
         // Jika dipanggil oleh order.blade.php (Kasir POS)
-        return redirect()->route('casshier.pos.order')->with([
+        return redirect()->route('cashier.pos.order')->with([
             'success' => $msg,
             'print_id' => $order->id
         ]);
@@ -210,13 +210,13 @@ class OrderController extends Controller
         // UBAH BAGIAN INI: Jangan '01', ubah jadi 'Takeaway' atau kosongkan
         $table_number = 'Takeaway';
 
-        return view('casshier.pos.order', compact('menus', 'table_number'));
+        return view('cashier.pos.order', compact('menus', 'table_number'));
     }
 
     // Tambahkan fungsi baru
     public function print($id)
     {
         $order = Order::findOrFail($id);
-        return view('casshier.pos.print_nota', compact('order'));
+        return view('cashier.pos.print_nota', compact('order'));
     }
 }

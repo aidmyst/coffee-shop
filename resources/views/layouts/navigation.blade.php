@@ -109,8 +109,8 @@
         @endif
 
         @if (Auth::user()->role === 'kasir')
-            <a href="{{ route('casshier.reports.history') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('casshier.reports.*') ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-600 hover:bg-gray-100' }}"
+            <a href="{{ route('cashier.reports.history') }}"
+                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('cashier.reports.*') ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-600 hover:bg-gray-100' }}"
                 title="Riwayat Transaksi">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -120,8 +120,8 @@
                     Riwayat Transaksi</span>
             </a>
 
-            <a href="{{ route('casshier.pos.order') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('casshier.pos.*') ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-600 hover:bg-gray-100' }}"
+            <a href="{{ route('cashier.pos.order') }}"
+                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('cashier.pos.*') ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-600 hover:bg-gray-100' }}"
                 title="Transaksi Manual">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
