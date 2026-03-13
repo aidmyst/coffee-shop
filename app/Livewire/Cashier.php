@@ -5,7 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Order;
 
-class Casshier extends Component
+class Cashier extends Component
 {
     public $lastOrderCount = 0;
 
@@ -24,7 +24,7 @@ class Casshier extends Component
 
         $this->lastOrderCount = $orders->count();
 
-        return view('livewire.casshier', [  // Ini harus sesuai dengan lokasi file .blade.php
+        return view('livewire.cashier', [  // Ini harus sesuai dengan lokasi file .blade.php
             'orders' => $orders
         ]);
     }

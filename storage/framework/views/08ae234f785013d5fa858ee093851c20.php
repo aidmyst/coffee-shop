@@ -22,8 +22,8 @@
             x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-90" class="flex flex-col items-center justify-center w-full mt-4">
 
-            <a href="{{ route('dashboard') }}" class="block">
-                <img src="{{ asset('storage/images/Solstice.png') }}" alt="Solstice Cafe Logo"
+            <a href="<?php echo e(route('dashboard')); ?>" class="block">
+                <img src="<?php echo e(asset('storage/images/Solstice.png')); ?>" alt="Solstice Cafe Logo"
                     class="h-20 w-20 rounded-full object-cover border-2 border-white ring-2 ring-orange-100 shadow-sm transition-transform hover:scale-105">
             </a>
 
@@ -38,8 +38,8 @@
             <div class="border-t border-gray-100 w-full"></div>
         </div>
 
-        <a href="{{ route('dashboard') }}"
-            class="flex items-center justify-between p-3 rounded-lg transition-colors {{ request()->routeIs('dashboard') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+        <a href="<?php echo e(route('dashboard')); ?>"
+            class="flex items-center justify-between p-3 rounded-lg transition-colors <?php echo e(request()->routeIs('dashboard') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg'); ?>"
             title="Pesanan Masuk">
 
             <div class="flex items-center">
@@ -54,15 +54,15 @@
                 </span>
             </div>
 
-            {{-- Badge realtime --}}
+            
             <span id="pendingBadge" class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
             </span>
 
         </a>
 
-        @if (Auth::user()->role === 'admin')
-            <a href="{{ route('admin.menu.create') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('admin.menu.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->role === 'admin'): ?>
+            <a href="<?php echo e(route('admin.menu.create')); ?>"
+                class="flex items-center p-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.menu.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg'); ?>"
                 title="Kelola Menu & Stok">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -72,8 +72,8 @@
                     Menu</span>
             </a>
 
-            <a href="{{ route('admin.report.statistic') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('admin.report.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+            <a href="<?php echo e(route('admin.report.statistic')); ?>"
+                class="flex items-center p-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.report.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg'); ?>"
                 title="Laporan Keuangan">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -84,8 +84,8 @@
                     Keuangan</span>
             </a>
 
-            <a href="{{ route('admin.tables.kode_qr') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('admin.tables.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+            <a href="<?php echo e(route('admin.tables.kode_qr')); ?>"
+                class="flex items-center p-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.tables.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg'); ?>"
                 title="Kelola QR Meja">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -96,8 +96,8 @@
                     Meja</span>
             </a>
 
-            <a href="{{ route('profile.edit') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('profile.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+            <a href="<?php echo e(route('profile.edit')); ?>"
+                class="flex items-center p-3 rounded-lg transition-colors <?php echo e(request()->routeIs('profile.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg'); ?>"
                 title="Pengaturan Profil">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -106,11 +106,11 @@
                 <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">Pengaturan
                     Profil</span>
             </a>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        @if (Auth::user()->role === 'kasir')
-            <a href="{{ route('cashier.reports.history') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('cashier.reports.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->role === 'kasir'): ?>
+            <a href="<?php echo e(route('cashier.reports.history')); ?>"
+                class="flex items-center p-3 rounded-lg transition-colors <?php echo e(request()->routeIs('cashier.reports.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg'); ?>"
                 title="Riwayat Transaksi">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -120,8 +120,8 @@
                     Riwayat Transaksi</span>
             </a>
 
-            <a href="{{ route('cashier.pos.order') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('cashier.pos.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+            <a href="<?php echo e(route('cashier.pos.order')); ?>"
+                class="flex items-center p-3 rounded-lg transition-colors <?php echo e(request()->routeIs('cashier.pos.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg'); ?>"
                 title="Transaksi Manual">
                 <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -130,11 +130,11 @@
                 <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">
                     Kasir POS</span>
             </a>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <div class="pt-4 border-t border-gray-100">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
+            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                <?php echo csrf_field(); ?>
                 <button type="submit"
                     class="w-full flex items-center p-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-bold shadow-sm"
                     title="Keluar Sistem">
@@ -150,3 +150,4 @@
         </div>
     </nav>
 </aside>
+<?php /**PATH C:\laragon\www\coffee-shop\resources\views/layouts/navigation.blade.php ENDPATH**/ ?>
