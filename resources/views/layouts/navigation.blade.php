@@ -1,41 +1,34 @@
-<aside
-    class="bg-orange-600 shadow-md h-screen transition-all duration-700 ease-in-out hidden md:flex flex-col border-r border-gray-100 sticky top-0 overflow-hidden"
+<aside x-data="{ sidebarOpen: false }" @mouseenter="sidebarOpen = true" @mouseleave="sidebarOpen = false"
+    class="bg-orange-600 shadow-md h-screen transition-all duration-300 ease-in-out hidden md:flex flex-col border-r border-gray-100 sticky top-0 overflow-hidden w-20"
     :class="sidebarOpen ? 'w-64' : 'w-20'">
 
-    <div class="relative flex flex-col items-center justify-center transition-all duration-700 ease-in-out overflow-hidden"
-        :class="sidebarOpen ? 'h-32 p-6' : 'h-20 p-2'">
+    {{-- 
+        Area Header Logo 
+        Diberi tinggi tetap (h-40) agar menu di bawahnya tidak bergeser naik-turun saat hover.
+    --}}
+    <div class="h-40 w-full flex flex-col items-center justify-center relative flex-shrink-0">
 
-        <div class="absolute top-6 z-20 transition-all duration-700 ease-in-out"
-            :class="sidebarOpen ? 'left-1/2 translate-x-16' : 'left-1/2 -translate-x-1/2'">
-            <button @click="toggleSidebar()"
-                class="p-2 rounded-lg hover:bg-orange-50 text-orange-600 transition-all duration-300 focus:outline-none active:scale-90">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16">
-                    </path>
-                </svg>
-            </button>
-        </div>
+        {{-- Gambar Logo (Mengecil saat tertutup, Membesar saat dibuka) --}}
+        <a href="{{ route('dashboard') }}" class="block transition-all duration-300 ease-in-out z-10"
+            :class="sidebarOpen ? '-translate-y-3' : 'translate-y-0'">
+            <img src="{{ asset('storage/images/Solstice.png') }}" alt="Solstice Cafe Logo"
+                class="rounded-full object-cover border-2 border-white ring-2 ring-orange-100 shadow-sm transition-all duration-300 hover:scale-105"
+                :class="sidebarOpen ? 'h-20 w-20' : 'h-10 w-10'">
+        </a>
 
-        <div x-show="sidebarOpen" x-transition:enter="transition ease-out duration-700 delay-200"
-            x-transition:enter-start="opacity-0 scale-90 -translate-y-4"
-            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-90" class="flex flex-col items-center justify-center w-full mt-4">
-
-            <a href="{{ route('dashboard') }}" class="block">
-                <img src="{{ asset('storage/images/Solstice.png') }}" alt="Solstice Cafe Logo"
-                    class="h-20 w-20 rounded-full object-cover border-2 border-white ring-2 ring-orange-100 shadow-sm transition-transform hover:scale-105">
-            </a>
-
-            <span class="mt-3 font-black text-white uppercase tracking-tighter text-base whitespace-nowrap">
-                Solstice Cafe
-            </span>
-        </div>
+        {{-- Teks Cafe (Hanya muncul saat dibuka, dengan animasi fade) --}}
+        <span x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300 delay-100"
+            x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="absolute bottom-6 font-black text-white uppercase tracking-tighter text-base whitespace-nowrap">
+            Solstice Cafe
+        </span>
     </div>
 
-    <nav class="mt-4 flex-1 px-4 space-y-2 overflow-y-auto">
+    <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
         <div>
-            <div class="border-t border-gray-100 w-full"></div>
+            <div class="border-t border-white/20 w-full mb-4"></div>
         </div>
 
         <a href="{{ route('dashboard') }}"
@@ -49,7 +42,7 @@
                     </path>
                 </svg>
 
-                <span x-show="sidebarOpen" class="mx-3 whitespace-nowrap">
+                <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">
                     Pesanan Masuk
                 </span>
             </div>
@@ -57,7 +50,6 @@
             {{-- Badge realtime --}}
             <span id="pendingBadge" class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
             </span>
-
         </a>
 
         @if (Auth::user()->role === 'admin')
@@ -70,6 +62,18 @@
                 </svg>
                 <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">Kelola
                     Menu</span>
+            </a>
+
+            <a href="{{ route('admin.inventory.stock') }}"
+                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('admin.inventory.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+                title="Inventaris Bahan Baku">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4">
+                    </path>
+                </svg>
+                <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">Inventaris
+                    Bahan</span>
             </a>
 
             <a href="{{ route('admin.report.statistic') }}"
@@ -109,17 +113,6 @@
         @endif
 
         @if (Auth::user()->role === 'kasir')
-            <a href="{{ route('cashier.reports.history') }}"
-                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('cashier.reports.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
-                title="Riwayat Transaksi">
-                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">
-                    Riwayat Transaksi</span>
-            </a>
-
             <a href="{{ route('cashier.pos.order') }}"
                 class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('cashier.pos.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
                 title="Transaksi Manual">
@@ -130,9 +123,20 @@
                 <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">
                     Kasir POS</span>
             </a>
+
+            <a href="{{ route('cashier.reports.history') }}"
+                class="flex items-center p-3 rounded-lg transition-colors {{ request()->routeIs('cashier.reports.*') ? 'bg-white text-orange-700 font-bold' : 'text-white hover:shadow-lg' }}"
+                title="Riwayat Transaksi">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">
+                    Riwayat Transaksi</span>
+            </a>
         @endif
 
-        <div class="pt-4 border-t border-gray-100">
+        <div class="pt-4 border-t border-white/20 mb-4">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
@@ -143,7 +147,7 @@
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                         </path>
                     </svg>
-                    <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap text-sm">Keluar
+                    <span x-show="sidebarOpen" x-transition.origin.left class="mx-3 whitespace-nowrap">Keluar
                         Sistem</span>
                 </button>
             </form>

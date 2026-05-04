@@ -165,13 +165,9 @@
 
                                     
                                     <td class="px-6 py-4 text-center">
-                                        <button wire:click="completeOrder(<?php echo e($order->id); ?>)"
-                                            wire:loading.attr="disabled"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50">
-                                            <span wire:loading.remove
-                                                wire:target="completeOrder(<?php echo e($order->id); ?>)">Konfirmasi ➜</span>
-                                            <span wire:loading
-                                                wire:target="completeOrder(<?php echo e($order->id); ?>)">Memproses...</span>
+                                        <button wire:click="confirmComplete(<?php echo e($order->id); ?>)"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95">
+                                            Konfirmasi ➜
                                         </button>
                                     </td>
                                 </tr>
@@ -189,5 +185,108 @@
             </div>
         </div>
     </div>
+    
+    
+    
+    <div x-data="{ open: <?php if ((object) ('showReceiptModal') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('showReceiptModal'->value()); ?>')<?php echo e('showReceiptModal'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('showReceiptModal'); ?>')<?php endif; ?> }" x-show="open" x-cloak
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+
+        <div x-show="open" x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            class="bg-gray-100 rounded-2xl shadow-2xl max-w-sm w-full p-4 m-4 relative border border-gray-200"
+            @click.away="$wire.cancelConfirm()">
+
+            <div class="text-center mb-4">
+                <h3 class="font-black text-gray-800 uppercase tracking-widest">Pratinjau Nota</h3>
+                <p class="text-[10px] text-gray-500 font-bold uppercase">Cek kembali sebelum mencetak</p>
+            </div>
+
+            
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($selectedOrder): ?>
+                <div class="bg-white mx-auto shadow-sm border border-gray-300 p-4 font-mono text-[11px] text-black leading-tight"
+                    style="width: 280px;">
+                    <div class="text-center">
+                        <strong style="font-size: 14px;">SOLSTICE CAFE</strong><br>
+                        Jl. Raya Cidahu No. 32, Kec. Cicurug Kabupaten Sukabumi<br>
+                        <?php echo e($selectedOrder->created_at->format('d/m/Y H:i')); ?>
+
+                    </div>
+
+                    <div class="border-b border-dashed border-black my-2"></div>
+                    <div>
+                        Pelanggan: <?php echo e($selectedOrder->customer_name); ?><br>
+                        Tipe: <?php echo e($selectedOrder->table_number); ?>
+
+                    </div>
+                    <div class="border-b border-dashed border-black my-2"></div>
+
+                    <table class="w-full">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = json_decode($selectedOrder->items); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                            <tr>
+                                <td colspan="3" class="font-bold py-1"><?php echo e($item->name); ?></td>
+                            </tr>
+                            <tr>
+                                <td class="w-[15%] align-top"><?php echo e($item->qty); ?>x</td>
+                                <td class="w-[55%] text-[10px] text-gray-600 align-top pr-1">
+                                    <?php echo e($item->option ?? ''); ?>
+
+                                    <?php echo e(isset($item->option) && isset($item->sugar) ? '•' : ''); ?>
+
+                                    <?php echo e($item->sugar ?? ''); ?>
+
+                                </td>
+                                <td class="w-[30%] text-right align-top">
+                                    <?php echo e(number_format($item->price * $item->qty, 0, ',', '.')); ?></td>
+                            </tr>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                    </table>
+
+                    <div class="border-b border-dashed border-black my-2"></div>
+                    <table class="w-full font-bold">
+                        <tr>
+                            <td>TOTAL</td>
+                            <td class="text-right"><?php echo e(number_format($selectedOrder->total_price, 0, ',', '.')); ?></td>
+                        </tr>
+                    </table>
+
+                    <div class="border-b border-dashed border-black my-2"></div>
+                    <div class="text-center mt-2 text-[10px]">
+                        Terima kasih atas kunjungannya!<br>
+                        Instagram: @solstice.cafe
+                    </div>
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            
+            <div class="mt-6 flex gap-3">
+                <button wire:click="cancelConfirm"
+                    class="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-bold text-xs uppercase transition-colors">
+                    Batal
+                </button>
+                <button wire:click="processAndPrint"
+                    class="w-2/3 bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-600/30 transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                        </path>
+                    </svg>
+                    Cetak & Selesai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('open-print-tab', (event) => {
+                // Membuka tab baru untuk rute print nota
+                window.open(event.url, '_blank');
+            });
+        });
+    </script>
 </div>
 <?php /**PATH C:\laragon\www\coffee-shop\resources\views/livewire/cashier.blade.php ENDPATH**/ ?>

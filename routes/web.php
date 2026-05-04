@@ -67,6 +67,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Stok
         Route::patch('/admin/menu/{menu}/toggle-stock', [App\Http\Controllers\Admin\MenuController::class, 'toggleStock'])->name('admin.menu.toggle-stock');
+
+        Route::get('/admin/inventory/stock', function () {
+            return view('admin.inventory.stock');
+        })->name('admin.inventory.stock');
     });
 });
 

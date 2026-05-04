@@ -1,5 +1,16 @@
-<x-public-layout>
-    @php $categories = ['Coffee', 'Non-Coffee', 'Tea', 'Juice', 'Snack', 'Dessert']; @endphp
+<?php if (isset($component)) { $__componentOriginal58c831a7c3cbf004f2e66a23aed50e5b = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal58c831a7c3cbf004f2e66a23aed50e5b = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.public-layout','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('public-layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+    <?php $categories = ['Coffee', 'Non-Coffee', 'Tea', 'Juice', 'Snack', 'Dessert']; ?>
 
     <div class="max-w-full mx-auto bg-gray-50 min-h-screen pb-6 font-sans" x-data="Object.assign(cartSystem(), {
         showItemModal: false,
@@ -10,68 +21,71 @@
         qty: 1
     })">
 
-        {{-- Header: Kombinasi Solid & Blur --}}
+        
         <header class="w-full sticky top-0 z-50">
 
-            {{-- 1. Bar Atas (SOLID): Nama Cafe & Nomor Meja --}}
+            
             <div class="bg-white py-3 px-5 flex justify-between items-center border-b border-gray-50">
-                {{-- Sisi Kiri: Nama Cafe --}}
+                
                 <div>
                     <h1 class="text-[18px] font-black text-orange-600 tracking-tight uppercase italic">Solstice Cafe</h1>
                 </div>
 
-                {{-- Sisi Kanan: Highlight Nomor Meja --}}
+                
                 <div class="flex items-center gap-2">
                     <span class="text-[14px] font-black text-gray-400 uppercase tracking-[0.2em]">Table</span>
                     <div
                         class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-600/20 rotate-3">
                         <span class="text-white text-lg font-black -rotate-3 leading-none">
-                            {{ $table_number }}
+                            <?php echo e($table_number); ?>
+
                         </span>
                     </div>
                 </div>
             </div>
 
-            {{-- 2. Bar Slider Kategori (BLUR & Transparan) --}}
+            
             <div class="bg-white border-b border-gray-100 shadow-sm overflow-hidden">
                 <div class="flex overflow-x-auto custom-scrollbar-hide py-3 px-4 gap-2 scroll-smooth">
-                    @foreach ($categories as $cat)
-                        <button @click="scrollToCategory('cat-{{ Str::slug($cat) }}')"
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                        <button @click="scrollToCategory('cat-<?php echo e(Str::slug($cat)); ?>')"
                             class="whitespace-nowrap px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-full border border-orange-200/50 bg-white/80 text-gray-700 hover:bg-orange-600 hover:text-white transition-all active:scale-90 flex-shrink-0 shadow-sm">
-                            {{ $cat }}
+                            <?php echo e($cat); ?>
+
                         </button>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </div>
             </div>
         </header>
 
-        {{-- Katalog Menu --}}
+        
         <div class="space-y-8" :class="cart.length > 0 ? 'pb-24' : 'pb-4'">
-            @foreach ($categories as $cat)
-                @if ($menus->where('category', $cat)->count() > 0)
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($menus->where('category', $cat)->count() > 0): ?>
                     <div class="mt-8 px-4 first:mt-4">
-                        {{-- Header Kategori --}}
-                        {{-- scroll-mt-[135px] disesuaikan dengan tinggi header solid + slider blur --}}
-                        <h2 id="cat-{{ Str::slug($cat) }}"
+                        
+                        
+                        <h2 id="cat-<?php echo e(Str::slug($cat)); ?>"
                             class="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-3 scroll-mt-[135px] md:scroll-mt-[150px]">
                             <span class="w-8 h-[2px] bg-orange-500"></span>
-                            {{ $cat }}
+                            <?php echo e($cat); ?>
+
                         </h2>
 
                         <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-10 gap-3">
-                            @foreach ($menus->where('category', $cat) as $menu)
-                                {{-- Tambahkan h-full agar card memiliki tinggi yang sama dalam satu baris --}}
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menus->where('category', $cat); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                
                                 <div
                                     class="bg-white rounded-2xl p-2 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.07)] border border-gray-100 flex flex-col h-full transition-all duration-200 
-                                    {{ !($menu->is_available ?? true) ? 'opacity-60 grayscale select-none' : 'active:scale-[0.96]' }}">
+                                    <?php echo e(!($menu->is_available ?? true) ? 'opacity-60 grayscale select-none' : 'active:scale-[0.96]'); ?>">
 
-                                    {{-- Image Container --}}
+                                    
                                     <div
                                         class="aspect-square rounded-xl bg-gray-50 overflow-hidden relative group flex-shrink-0">
-                                        @if ($menu->image)
-                                            <img src="{{ asset('storage/' . $menu->image) }}"
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($menu->image): ?>
+                                            <img src="<?php echo e(asset('storage/' . $menu->image)); ?>"
                                                 class="w-full h-full object-cover">
-                                        @else
+                                        <?php else: ?>
                                             <div
                                                 class="w-full h-full flex items-center justify-center bg-gray-50 text-gray-200">
                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor"
@@ -82,10 +96,10 @@
                                                     </path>
                                                 </svg>
                                             </div>
-                                        @endif
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                        {{-- Overlay Stok Habis di Gambar --}}
-                                        @if (!($menu->is_available ?? true))
+                                        
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!($menu->is_available ?? true)): ?>
                                             <div
                                                 class="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-[1px]">
                                                 <span
@@ -93,65 +107,66 @@
                                                     Out Of Stock
                                                 </span>
                                             </div>
-                                        @endif
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </div>
 
-                                    {{-- Info + Harga + Button --}}
+                                    
                                     <div class="flex flex-col flex-1 mt-3 w-full box-border">
-                                        {{-- Nama Menu --}}
+                                        
                                         <h3
                                             class="font-extrabold text-gray-800 text-[14px] md:text-[11px] leading-tight line-clamp-2 text-center">
-                                            {{ $menu->name }}
+                                            <?php echo e($menu->name); ?>
+
                                         </h3>
 
-                                        {{-- AREA BAWAH (Harga & Tombol) --}}
+                                        
                                         <div class="mt-auto">
-                                            {{-- Harga --}}
-                                            @php
+                                            
+                                            <?php
                                                 if (Str::contains(strtolower($menu->name), 'lychee')) {
                                                     $price = $menu->price_ice ?? $menu->price_hot;
                                                 } else {
                                                     $price = $menu->price_hot ?? $menu->price_ice;
                                                 }
-                                            @endphp
+                                            ?>
 
-                                            @if ($price)
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($price): ?>
                                                 <div
                                                     class="flex items-center justify-between bg-gray-100/50 rounded-md w-full mt-2 px-2">
                                                     <span
                                                         class="text-[9px] font-black text-gray-400 uppercase">Price</span>
                                                     <span
-                                                        class="text-gray-900 font-black text-[12px]">{{ number_format($price / 1000, 0) }}k</span>
+                                                        class="text-gray-900 font-black text-[12px]"><?php echo e(number_format($price / 1000, 0)); ?>k</span>
                                                 </div>
-                                            @endif
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                            {{-- Tombol Tambah --}}
-                                            @if (!($menu->is_available ?? true))
+                                            
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!($menu->is_available ?? true)): ?>
                                                 <button disabled
                                                     class="mt-2 w-full bg-gray-300 text-gray-500 text-[12px] font-black py-2 rounded-lg cursor-not-allowed">
                                                     Unavailable
                                                 </button>
-                                            @else
+                                            <?php else: ?>
                                                 <button
                                                     @click="openItemModal({
-                                                        name:'{{ $menu->name }}',
-                                                        image:'{{ $menu->image ? asset('storage/' . $menu->image) : '' }}',
-                                                        price_hot:{{ $menu->price_hot ?? 0 }},
-                                                        price_ice:{{ $menu->price_ice ?? 0 }},
-                                                        category:'{{ $cat }}'
+                                                        name:'<?php echo e($menu->name); ?>',
+                                                        image:'<?php echo e($menu->image ? asset('storage/' . $menu->image) : ''); ?>',
+                                                        price_hot:<?php echo e($menu->price_hot ?? 0); ?>,
+                                                        price_ice:<?php echo e($menu->price_ice ?? 0); ?>,
+                                                        category:'<?php echo e($cat); ?>'
                                                     })"
                                                     class="mt-2 w-full bg-gray-900 text-white text-[12px] font-black py-2 rounded-lg">
                                                     Add
                                                 </button>
-                                            @endif
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
-                            @endforeach
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </div>
                     </div>
-                @endif
-            @endforeach
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
         </div>
 
         <div x-show="showItemModal" x-transition:enter="transition-transform duration-300"
@@ -353,7 +368,7 @@
                 <!-- FIXED BOTTOM -->
                 <div class="p-3 border-t bg-white shadow-[0_-6px_20px_rgba(0,0,0,0.08)]">
                     <div class="flex items-center justify-between mb-2">
-                        {{-- Kontrol Qty: Dibuat lega identik dengan Cart --}} <div
+                         <div
                             class="flex items-center gap-4 bg-gray-50 rounded-2xl px-4 py-2 border border-gray-100">
                             <button @click="if(qty>1) qty--"
                                 class="font-black text-orange-600 text-xl w-6 h-6 flex items-center justify-center active:scale-75 transition-transform">
@@ -380,17 +395,17 @@
             </div>
         </div>
 
-        {{-- Floating Cart System --}}
+        
         <template x-if="cart.length > 0 && !showItemModal">
             <div class="fixed bottom-6 left-4 right-4 z-50 flex flex-col gap-2">
 
-                {{-- Floating Bar --}}
+                
                 <div @click="showCartModal = true"
                     class="bg-orange-600 text-white p-3 rounded-[2rem] shadow-2xl flex justify-between items-center cursor-pointer active:scale-[0.98] transition">
 
                     <div class="flex items-center gap-3 px-2">
 
-                        {{-- Icon Keranjang --}}
+                        
                         <div class="relative select-none">
                             <div class="p-2.5">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
@@ -400,14 +415,14 @@
                                 </svg>
                             </div>
 
-                            {{-- Badge --}}
+                            
                             <span
                                 class="absolute -top-1.5 -right-1.5 bg-red-600 text-[9px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-orange-600 font-black"
                                 x-text="cart.reduce((a, b) => a + b.qty, 0)">
                             </span>
                         </div>
 
-                        {{-- Total --}}
+                        
                         <div class="select-none">
                             <p class="text-[7px] uppercase font-black text-orange-100 tracking-[0.2em]">Total</p>
                             <p class="text-sm font-black tracking-tight">
@@ -416,7 +431,7 @@
                         </div>
                     </div>
 
-                    {{-- Checkout --}}
+                    
                     <div class="text-white px-6 py-2 font-black text-[11px] uppercase tracking-widest">
                         View Cart
                     </div>
@@ -432,7 +447,7 @@
             x-effect="document.body.style.overflow = showCartModal ? 'hidden' : 'auto'"
             class="fixed inset-0 z-[60] bg-white flex flex-col">
 
-            {{-- HEADER --}}
+            
             <div class="flex items-center justify-between py-4 px-6 border-b border-gray-100 flex-shrink-0 bg-white">
                 <h2 class="text-xs font-black text-gray-800 uppercase tracking-widest">
                     Your Cart
@@ -446,7 +461,7 @@
                 </button>
             </div>
 
-            {{-- LIST ITEM + CATATAN: Scrollable --}}
+            
             <div class="overflow-y-auto flex-1 px-6 py-4 custom-scrollbar">
                 <template x-for="(item, index) in cart"
                     :key="item.name + '-' + item.option + '-' + item.sugar + '-' + index">
@@ -496,7 +511,7 @@
                             </div>
                 </template>
 
-                {{-- CATATAN PESANAN --}}
+                
                 <div class="mt-4">
                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 block">
                         Order Note (Optional)
@@ -506,7 +521,7 @@
                 </div>
             </div>
 
-            {{-- FOOTER: Total Harga + Checkout --}}
+            
             <div class="border-t border-gray-100 p-6 flex-shrink-0 bg-gray-50/50">
                 <div class="flex items-center justify-between">
                     <div class="flex flex-col">
@@ -541,7 +556,7 @@
     <script>
         function cartSystem() {
             return {
-                tableNumber: '{{ $table_number }}',
+                tableNumber: '<?php echo e($table_number); ?>',
                 cart: JSON.parse(localStorage.getItem('cafe_cart')) || [],
                 totalPrice: 0,
                 orderNote: localStorage.getItem('cafe_note') || '',
@@ -827,4 +842,14 @@
             }
         }
     </script>
-</x-public-layout>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal58c831a7c3cbf004f2e66a23aed50e5b)): ?>
+<?php $attributes = $__attributesOriginal58c831a7c3cbf004f2e66a23aed50e5b; ?>
+<?php unset($__attributesOriginal58c831a7c3cbf004f2e66a23aed50e5b); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal58c831a7c3cbf004f2e66a23aed50e5b)): ?>
+<?php $component = $__componentOriginal58c831a7c3cbf004f2e66a23aed50e5b; ?>
+<?php unset($__componentOriginal58c831a7c3cbf004f2e66a23aed50e5b); ?>
+<?php endif; ?>
+<?php /**PATH C:\laragon\www\coffee-shop\resources\views/public/menu.blade.php ENDPATH**/ ?>

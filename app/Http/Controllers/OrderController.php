@@ -76,7 +76,7 @@ class OrderController extends Controller
     {
         // Statistik pendapatan 7 hari terakhir
         $data = Order::where('status', 'completed')
-            ->where('created_at', '>=', now()->subDays(7))
+            ->where('created_at', '>=', now()->subDays(30))
             ->selectRaw('DATE(created_at) as date, SUM(total_price) as total')
             ->groupBy('date')
             ->orderBy('date', 'ASC')

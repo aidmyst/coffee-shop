@@ -159,13 +159,9 @@
 
                                     {{-- Kolom Aksi --}}
                                     <td class="px-6 py-4 text-center">
-                                        <button wire:click="completeOrder({{ $order->id }})"
-                                            wire:loading.attr="disabled"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50">
-                                            <span wire:loading.remove
-                                                wire:target="completeOrder({{ $order->id }})">Konfirmasi ➜</span>
-                                            <span wire:loading
-                                                wire:target="completeOrder({{ $order->id }})">Memproses...</span>
+                                        <button wire:click="confirmComplete({{ $order->id }})"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95">
+                                            Konfirmasi ➜
                                         </button>
                                     </td>
                                 </tr>
@@ -183,4 +179,102 @@
             </div>
         </div>
     </div>
+    {{-- ========================================== --}}
+    {{-- MODAL PRATINJAU NOTA --}}
+    {{-- ========================================== --}}
+    <div x-data="{ open: @entangle('showReceiptModal') }" x-show="open" x-cloak
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+
+        <div x-show="open" x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            class="bg-gray-100 rounded-2xl shadow-2xl max-w-sm w-full p-4 m-4 relative border border-gray-200"
+            @click.away="$wire.cancelConfirm()">
+
+            <div class="text-center mb-4">
+                <h3 class="font-black text-gray-800 uppercase tracking-widest">Pratinjau Nota</h3>
+                <p class="text-[10px] text-gray-500 font-bold uppercase">Cek kembali sebelum mencetak</p>
+            </div>
+
+            {{-- Kertas Nota (Meniru ukuran 58mm) --}}
+            @if ($selectedOrder)
+                <div class="bg-white mx-auto shadow-sm border border-gray-300 p-4 font-mono text-[11px] text-black leading-tight"
+                    style="width: 280px;">
+                    <div class="text-center">
+                        <strong style="font-size: 14px;">SOLSTICE CAFE</strong><br>
+                        Jl. Raya Cidahu No. 32, Kec. Cicurug Kabupaten Sukabumi<br>
+                        {{ $selectedOrder->created_at->format('d/m/Y H:i') }}
+                    </div>
+
+                    <div class="border-b border-dashed border-black my-2"></div>
+                    <div>
+                        Pelanggan: {{ $selectedOrder->customer_name }}<br>
+                        Tipe: {{ $selectedOrder->table_number }}
+                    </div>
+                    <div class="border-b border-dashed border-black my-2"></div>
+
+                    <table class="w-full">
+                        @foreach (json_decode($selectedOrder->items) as $item)
+                            <tr>
+                                <td colspan="3" class="font-bold py-1">{{ $item->name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="w-[15%] align-top">{{ $item->qty }}x</td>
+                                <td class="w-[55%] text-[10px] text-gray-600 align-top pr-1">
+                                    {{ $item->option ?? '' }}
+                                    {{ isset($item->option) && isset($item->sugar) ? '•' : '' }}
+                                    {{ $item->sugar ?? '' }}
+                                </td>
+                                <td class="w-[30%] text-right align-top">
+                                    {{ number_format($item->price * $item->qty, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </table>
+
+                    <div class="border-b border-dashed border-black my-2"></div>
+                    <table class="w-full font-bold">
+                        <tr>
+                            <td>TOTAL</td>
+                            <td class="text-right">{{ number_format($selectedOrder->total_price, 0, ',', '.') }}</td>
+                        </tr>
+                    </table>
+
+                    <div class="border-b border-dashed border-black my-2"></div>
+                    <div class="text-center mt-2 text-[10px]">
+                        Terima kasih atas kunjungannya!<br>
+                        Instagram: @solstice.cafe
+                    </div>
+                </div>
+            @endif
+
+            {{-- Tombol Aksi Modal --}}
+            <div class="mt-6 flex gap-3">
+                <button wire:click="cancelConfirm"
+                    class="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-bold text-xs uppercase transition-colors">
+                    Batal
+                </button>
+                <button wire:click="processAndPrint"
+                    class="w-2/3 bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-600/30 transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                        </path>
+                    </svg>
+                    Cetak & Selesai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Script untuk mendengarkan event print dari Livewire --}}
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('open-print-tab', (event) => {
+                // Membuka tab baru untuk rute print nota
+                window.open(event.url, '_blank');
+            });
+        });
+    </script>
 </div>

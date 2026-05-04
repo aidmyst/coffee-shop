@@ -37,7 +37,7 @@
 
                 
                 <div class="lg:col-span-7">
-                    <div class="bg-white p-2 rounded-2xl shadow-sm border flex flex-wrap gap-2 items-center">
+                    <div class="bg-white p-2 rounded-xl shadow-sm border flex flex-wrap gap-2 items-center">
                         <?php
                             $filters = ['Semua', 'Coffee', 'Non-Coffee', 'Tea', 'Juice', 'Snack', 'Dessert'];
                         ?>
@@ -62,7 +62,7 @@
 
                 
                 <div class="lg:col-span-3">
-                    <div class="bg-white p-2 rounded-2xl shadow-sm border flex items-center gap-2">
+                    <div class="bg-white p-2 rounded-xl shadow-sm border flex items-center gap-2">
 
                         <svg class="w-4 h-4 text-gray-400 ml-2" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -105,7 +105,7 @@
                                     
                                     <div x-show="search === '' || '<?php echo e(strtolower($menu->name)); ?>'.includes(search.toLowerCase())"
                                         class="rounded-xl shadow-sm border border-gray-100 overflow-hidden group transition-all relative flex flex-col h-full 
-    <?php echo e(!($menu->is_available ?? true) ? 'bg-gray-100 opacity-60 grayscale' : 'bg-white hover:shadow-md'); ?>">
+                                        <?php echo e(!($menu->is_available ?? true) ? 'bg-gray-100 opacity-60 grayscale' : 'bg-white hover:shadow-md'); ?>">
 
                                         
                                         <div

@@ -26,7 +26,7 @@
 
                 {{-- FILTER (sejajar dengan 3 card menu) --}}
                 <div class="lg:col-span-7">
-                    <div class="bg-white p-2 rounded-2xl shadow-sm border flex flex-wrap gap-2 items-center">
+                    <div class="bg-white p-2 rounded-xl shadow-sm border flex flex-wrap gap-2 items-center">
                         @php
                             $filters = ['Semua', 'Coffee', 'Non-Coffee', 'Tea', 'Juice', 'Snack', 'Dessert'];
                         @endphp
@@ -50,7 +50,7 @@
 
                 {{-- SEARCH (di atas form tambah menu) --}}
                 <div class="lg:col-span-3">
-                    <div class="bg-white p-2 rounded-2xl shadow-sm border flex items-center gap-2">
+                    <div class="bg-white p-2 rounded-xl shadow-sm border flex items-center gap-2">
 
                         <svg class="w-4 h-4 text-gray-400 ml-2" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -91,7 +91,7 @@
                                     {{-- Ganti bagian ini di dalam loop @forelse Daftar Menu --}}
                                     <div x-show="search === '' || '{{ strtolower($menu->name) }}'.includes(search.toLowerCase())"
                                         class="rounded-xl shadow-sm border border-gray-100 overflow-hidden group transition-all relative flex flex-col h-full 
-    {{ !($menu->is_available ?? true) ? 'bg-gray-100 opacity-60 grayscale' : 'bg-white hover:shadow-md' }}">
+                                        {{ !($menu->is_available ?? true) ? 'bg-gray-100 opacity-60 grayscale' : 'bg-white hover:shadow-md' }}">
 
                                         {{-- Bagian Gambar --}}
                                         <div

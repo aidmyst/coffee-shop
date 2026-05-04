@@ -57,7 +57,7 @@
     </div>
 
     <div>
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl p-6">
@@ -90,6 +90,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Chart Batang Pendapatan
+        let orderChartRendered = false; // 1. Variabel penanda awal
+
         const ctxOrder = document.getElementById('orderChart').getContext('2d');
         new Chart(ctxOrder, {
             type: 'bar',
@@ -105,18 +107,23 @@
                 }]
             },
             options: {
+                // transitions resize bisa dihapus saja
                 animation: {
                     duration: 1000,
                     easing: 'linear',
+                    onComplete: function() {
+                        // 2. Saat animasi pertama selesai, ubah status jadi true
+                        orderChartRendered = true;
+                    }
                 },
                 animations: {
                     y: {
-                        duration: 500, // Dipercepat sedikit karena batangnya banyak
+                        // 3. Jika sudah render, matikan durasi, from, dan delay
+                        duration: () => orderChartRendered ? 0 : 500,
                         easing: 'linear',
-                        from: (ctx) => ctx.chart.scales.y.getPixelForValue(0),
+                        from: (ctx) => orderChartRendered ? undefined : ctx.chart.scales.y.getPixelForValue(0),
                         delay: (context) => {
-                            if (context.type === 'data' && context.mode === 'default') {
-                                // Delay diperkecil agar tidak kelamaan nunggu 30 batang muncul
+                            if (!orderChartRendered && context.type === 'data' && context.mode === 'default') {
                                 return context.dataIndex * 50;
                             }
                             return 0;
@@ -140,10 +147,10 @@
                 scales: {
                     x: {
                         grid: {
-                            display: false // Hilangkan garis vertikal agar lebih bersih
+                            display: false
                         },
                         ticks: {
-                            maxRotation: 45, // Miringkan label jika terlalu rapat
+                            maxRotation: 45,
                             minRotation: 45
                         }
                     },
