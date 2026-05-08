@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\StatistikController;
 use App\Models\Menu;
 use App\Models\Order;
+use App\Http\Controllers\Admin\InventoryController;
 
 // --- HALAMAN UTAMA & PUBLIC ---
 Route::get('/', function () {
@@ -68,9 +69,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Stok
         Route::patch('/admin/menu/{menu}/toggle-stock', [App\Http\Controllers\Admin\MenuController::class, 'toggleStock'])->name('admin.menu.toggle-stock');
 
-        Route::get('/admin/inventory/stock', function () {
-            return view('admin.inventory.stock');
-        })->name('admin.inventory.stock');
+        Route::get('/admin/inventory/stock', [InventoryController::class, 'index'])->name('admin.inventory.stock');
+        Route::get('/admin/inventory/add_stock', [App\Http\Controllers\Admin\InventoryController::class, 'add_stock'])->name('admin.inventory.add_stock');
+        Route::post('/admin/inventory/store', [App\Http\Controllers\Admin\InventoryController::class, 'store'])->name('admin.inventory.store');
+        Route::put('/admin/inventory/{id}', [App\Http\Controllers\Admin\InventoryController::class, 'update'])->name('admin.inventory.update');
+        Route::delete('/admin/inventory/{id}', [App\Http\Controllers\Admin\InventoryController::class, 'destroy'])->name('admin.inventory.destroy');
+
+        Route::get('/admin/menu/{menu}/recipe', [App\Http\Controllers\Admin\MenuController::class, 'recipe'])->name('admin.menu.recipe');
+        Route::post('/admin/menu/{menu}/recipe', [App\Http\Controllers\Admin\MenuController::class, 'storeRecipe'])->name('admin.menu.recipe.store');
     });
 });
 

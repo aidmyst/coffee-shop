@@ -47,7 +47,7 @@
                             <tr>
                                 <th class="px-6 py-4 text-center">Pelanggan / Meja</th>
                                 <th class="px-6 py-4 text-center">Waktu</th>
-                                <th class="px-6 py-4 text-center">Rincian Menu & Qty</th>
+                                <th class="px-6 py-4 text-center">Rincian Menu</th>
                                 <th class="px-6 py-4 text-center">Catatan</th>
                                 <th class="px-6 py-4 text-center">Total Bayar</th>
                                 <th class="px-6 py-4 text-center">Status</th>

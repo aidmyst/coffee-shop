@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Ingredient;
 
 class MenuController extends Controller
 {
@@ -108,17 +109,53 @@ class MenuController extends Controller
         return view('admin.menu.edit', compact('menu'));
     }
 
-    public function toggleStock($id)
+    public function toggleStock(\App\Models\Menu $menu)
     {
-        $menu = \App\Models\Menu::findOrFail($id);
+        // Jika is_active null (menu lama), kita anggap awalnya true, jadi diubah ke false.
+        // Jika sudah ada nilainya, tinggal dibalik (true jadi false, false jadi true).
+        $currentStatus = $menu->is_active ?? true;
 
-        // Membalikkan status (jika true jadi false, jika false jadi true)
         $menu->update([
-            'is_available' => !$menu->is_available
+            'is_active' => !$currentStatus
         ]);
 
-        $status = $menu->is_available ? 'Tersedia' : 'Habis';
+        return redirect()->back()->with('success', 'Status saklar manual untuk ' . $menu->name . ' berhasil diubah!');
+    }
 
-        return back()->with('success', "Status stok {$menu->name} berhasil diubah menjadi {$status}!");
+    // 1. Fungsi menampilkan halaman resep
+    public function recipe(\App\Models\Menu $menu)
+    {
+        // Ambil semua bahan baku dari gudang
+        $ingredients = \App\Models\Ingredient::orderBy('name', 'asc')->get();
+
+        // Ambil resep yang sudah ada sebelumnya (jika ada) untuk ditampilkan kembali
+        $currentRecipe = $menu->ingredients->pluck('pivot.quantity_needed', 'id')->toArray();
+
+        return view('admin.menu.recipe', compact('menu', 'ingredients', 'currentRecipe'));
+    }
+
+    // 2. Fungsi untuk menyimpan resep ke database
+    public function storeRecipe(\Illuminate\Http\Request $request, \App\Models\Menu $menu)
+    {
+        $dataToSync = [];
+
+        // Looping data yang dikirim dari form
+        if ($request->has('ingredients')) {
+            foreach ($request->ingredients as $ingredientId => $details) {
+                // Jika input jumlahnya diisi (lebih dari 0), maka masukkan ke resep
+                if (!empty($details['quantity']) && $details['quantity'] > 0) {
+                    $dataToSync[$ingredientId] = ['quantity_needed' => $details['quantity']];
+                }
+            }
+        }
+
+        // Simpan ke tabel pivot 'ingredient_menu' menggunakan fungsi sync()
+        $menu->ingredients()->sync($dataToSync);
+
+        // =========================================================
+        // UBAH BAGIAN RETURN INI AGAR KEMBALI KE HALAMAN MENU
+        // =========================================================
+        return redirect()->route('admin.menu.index')
+            ->with('success', 'Resep untuk menu ' . $menu->name . ' berhasil diperbarui!');
     }
 }

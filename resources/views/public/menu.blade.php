@@ -117,30 +117,44 @@
 
                                             @if ($price)
                                                 <div
-                                                    class="flex items-center justify-between bg-gray-100/50 rounded-md w-full mt-2 px-2">
+                                                    class="flex items-center justify-between bg-gray-100/50 rounded-md w-full mt-2 px-2 py-1 border border-gray-100">
                                                     <span
-                                                        class="text-[9px] font-black text-gray-400 uppercase">Price</span>
+                                                        class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Price</span>
                                                     <span
-                                                        class="text-gray-900 font-black text-[12px]">{{ number_format($price / 1000, 0) }}k</span>
+                                                        class="text-orange-600 font-black text-[12px]">{{ number_format($price / 1000, 0) }}k</span>
                                                 </div>
                                             @endif
 
-                                            {{-- Tombol Tambah --}}
-                                            @if (!($menu->is_available ?? true))
+                                            {{-- Tombol Tambah / Stok Habis --}}
+                                            @if (!$menu->is_available)
+                                                {{-- Tampilan saat bahan baku tidak mencukupi (Stok Habis) --}}
                                                 <button disabled
-                                                    class="mt-2 w-full bg-gray-300 text-gray-500 text-[12px] font-black py-2 rounded-lg cursor-not-allowed">
-                                                    Unavailable
+                                                    class="mt-2 w-full bg-red-50 border border-red-100 text-red-500 text-[12px] font-black py-2 rounded-lg cursor-not-allowed flex items-center justify-center gap-1 opacity-90">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="3"
+                                                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636">
+                                                        </path>
+                                                    </svg>
+                                                    Stok Habis
                                                 </button>
                                             @else
+                                                {{-- Tampilan saat stok aman --}}
                                                 <button
                                                     @click="openItemModal({
-                                                        name:'{{ $menu->name }}',
-                                                        image:'{{ $menu->image ? asset('storage/' . $menu->image) : '' }}',
-                                                        price_hot:{{ $menu->price_hot ?? 0 }},
-                                                        price_ice:{{ $menu->price_ice ?? 0 }},
-                                                        category:'{{ $cat }}'
+                                                        name: '{{ addslashes($menu->name) }}',
+                                                        image: '{{ $menu->image ? asset('storage/' . $menu->image) : '' }}',
+                                                        price_hot: {{ $menu->price_hot ?? 0 }},
+                                                        price_ice: {{ $menu->price_ice ?? 0 }},
+                                                        category: '{{ addslashes($cat) }}'
                                                     })"
-                                                    class="mt-2 w-full bg-gray-900 text-white text-[12px] font-black py-2 rounded-lg">
+                                                    class="mt-2 w-full bg-gray-900 text-white text-[12px] font-black py-2 rounded-lg flex items-center justify-center gap-1 transition-colors shadow-sm active:scale-95">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="3" d="M12 4v16m8-8H4"></path>
+                                                    </svg>
                                                     Add
                                                 </button>
                                             @endif
@@ -220,8 +234,8 @@
                                             <div class="w-4 h-4 border rounded-sm flex items-center justify-center flex-shrink-0"
                                                 :class="sugarLevel === s ? 'bg-orange-600 border-orange-600' :
                                                     'border-gray-300'">
-                                                <svg x-show="sugarLevel === s" class="w-3 h-3 text-white" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg x-show="sugarLevel === s" class="w-3 h-3 text-white"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="3" d="M5 13l4 4L19 7" />
                                                 </svg>

@@ -21,13 +21,13 @@
     <div class="py-6">
         {{-- Statistik Atas --}}
         <div class="max-w-full mx-auto sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
                 <p class="text-sm text-gray-500 font-bold uppercase">Meja Menunggu Pembayaran</p>
-                <h3 class="text-3xl font-black text-red-600">{{ $orders->count() }}</h3>
+                <h3 class="text-3xl font-black text-gray-800">{{ $orders->count() }}</h3>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
                 <p class="text-sm text-gray-500 font-bold uppercase">Jam Sekarang</p>
-                <h3 class="text-2xl font-bold text-gray-700">{{ now()->format('H:i') }} WIB</h3>
+                <h3 class="text-2xl font-bold text-gray-800">{{ now()->format('H:i') }} WIB</h3>
             </div>
         </div>
 
@@ -74,11 +74,11 @@
                         <thead
                             class="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b">
                             <tr>
-                                <th class="px-6 py-4 text-center">Meja</th>
+                                <th class="px-6 py-4 text-center">Pelanggan/Meja</th>
                                 <th class="px-6 py-4 text-center">Waktu</th>
                                 <th class="px-6 py-4 text-center">Rincian Menu</th>
                                 <th class="px-6 py-4 text-center">Catatan</th>
-                                <th class="px-6 py-4 text-center">Tagihan</th>
+                                <th class="px-6 py-4 text-center">Total Bayar</th>
                                 <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -160,8 +160,21 @@
                                     {{-- Kolom Aksi --}}
                                     <td class="px-6 py-4 text-center">
                                         <button wire:click="confirmComplete({{ $order->id }})"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95">
-                                            Konfirmasi ➜
+                                            wire:loading.attr="disabled"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 w-32 flex justify-center items-center mx-auto disabled:opacity-75 disabled:cursor-wait">
+
+                                            {{-- Teks Default: Hilang saat proses Livewire berjalan --}}
+                                            <span wire:loading.remove
+                                                wire:target="confirmComplete({{ $order->id }})">
+                                                Konfirmasi ➜
+                                            </span>
+
+                                            {{-- Teks Loading: Muncul instan saat tombol diklik --}}
+                                            <span wire:loading wire:target="confirmComplete({{ $order->id }})"
+                                                class="animate-pulse">
+                                                Tunggu...
+                                            </span>
+
                                         </button>
                                     </td>
                                 </tr>
@@ -183,98 +196,52 @@
     {{-- MODAL PRATINJAU NOTA --}}
     {{-- ========================================== --}}
     <div x-data="{ open: @entangle('showReceiptModal') }" x-show="open" x-cloak
-        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+        class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
 
-        <div x-show="open" x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="bg-gray-100 rounded-2xl shadow-2xl max-w-sm w-full p-4 m-4 relative border border-gray-200"
-            @click.away="$wire.cancelConfirm()">
+        <div
+            class="bg-white w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-2xl transform transition-all flex flex-col items-center">
 
-            <div class="text-center mb-4">
-                <h3 class="font-black text-gray-800 uppercase tracking-widest">Pratinjau Nota</h3>
-                <p class="text-[10px] text-gray-500 font-bold uppercase">Cek kembali sebelum mencetak</p>
+            {{-- Ikon Header --}}
+            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7">
+                    </path>
+                </svg>
             </div>
 
-            {{-- Kertas Nota (Meniru ukuran 58mm) --}}
-            @if ($selectedOrder)
-                <div class="bg-white mx-auto shadow-sm border border-gray-300 p-4 font-mono text-[11px] text-black leading-tight"
-                    style="width: 280px;">
-                    <div class="text-center">
-                        <strong style="font-size: 14px;">SOLSTICE CAFE</strong><br>
-                        Jl. Raya Cidahu No. 32, Kec. Cicurug Kabupaten Sukabumi<br>
-                        {{ $selectedOrder->created_at->format('d/m/Y H:i') }}
-                    </div>
+            <h3 class="text-lg font-black text-gray-800 mb-1">Pesanan Berhasil!</h3>
+            <p class="text-[11px] text-gray-400 uppercase tracking-widest mb-4">Pratinjau Nota Pesanan</p>
 
-                    <div class="border-b border-dashed border-black my-2"></div>
-                    <div>
-                        Pelanggan: {{ $selectedOrder->customer_name }}<br>
-                        Tipe: {{ $selectedOrder->table_number }}
-                    </div>
-                    <div class="border-b border-dashed border-black my-2"></div>
-
-                    <table class="w-full">
-                        @foreach (json_decode($selectedOrder->items) as $item)
-                            <tr>
-                                <td colspan="3" class="font-bold py-1">{{ $item->name }}</td>
-                            </tr>
-                            <tr>
-                                <td class="w-[15%] align-top">{{ $item->qty }}x</td>
-                                <td class="w-[55%] text-[10px] text-gray-600 align-top pr-1">
-                                    {{ $item->option ?? '' }}
-                                    {{ isset($item->option) && isset($item->sugar) ? '•' : '' }}
-                                    {{ $item->sugar ?? '' }}
-                                </td>
-                                <td class="w-[30%] text-right align-top">
-                                    {{ number_format($item->price * $item->qty, 0, ',', '.') }}</td>
-                            </tr>
-                        @endforeach
-                    </table>
-
-                    <div class="border-b border-dashed border-black my-2"></div>
-                    <table class="w-full font-bold">
-                        <tr>
-                            <td>TOTAL</td>
-                            <td class="text-right">{{ number_format($selectedOrder->total_price, 0, ',', '.') }}</td>
-                        </tr>
-                    </table>
-
-                    <div class="border-b border-dashed border-black my-2"></div>
-                    <div class="text-center mt-2 text-[10px]">
-                        Terima kasih atas kunjungannya!<br>
-                        Instagram: @solstice.cafe
-                    </div>
-                </div>
-            @endif
+            {{-- Iframe Nota Preview --}}
+            <div class="w-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden mb-6"
+                style="height: 300px;">
+                @if ($selectedOrder)
+                    <iframe id="receiptFrame" src="{{ route('order.print', $selectedOrder->id) }}"
+                        class="w-full h-full border-none shadow-inner"></iframe>
+                @endif
+            </div>
 
             {{-- Tombol Aksi Modal --}}
-            <div class="mt-6 flex gap-3">
-                <button wire:click="cancelConfirm"
-                    class="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-bold text-xs uppercase transition-colors">
-                    Batal
-                </button>
-                <button wire:click="processAndPrint"
-                    class="w-2/3 bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-600/30 transition-all active:scale-95 flex justify-center items-center gap-2">
+            <div class="flex flex-col w-full gap-2">
+                {{-- Tombol Konfirmasi (Penting: Tetap gunakan wire:click agar stok terpotong di backend) --}}
+                {{-- UBAH TOMBOL INI --}}
+                <button
+                    @click="document.getElementById('receiptFrame').contentWindow.print(); setTimeout(() => { $wire.processAndPrint() }, 500);"
+                    class="w-full bg-orange-600 text-white py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-3 shadow-xl shadow-orange-600/30 hover:bg-orange-700 transition-all active:scale-95 uppercase tracking-widest">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
                         </path>
                     </svg>
-                    Cetak & Selesai
+                    Cetak Nota Sekarang
+                </button>
+
+                {{-- Tombol Batal --}}
+                <button @click="open = false; $wire.cancelConfirm()"
+                    class="w-full bg-gray-100 text-gray-500 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-200 transition-all">
+                    Tutup
                 </button>
             </div>
         </div>
     </div>
-
-    {{-- Script untuk mendengarkan event print dari Livewire --}}
-    <script>
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('open-print-tab', (event) => {
-                // Membuka tab baru untuk rute print nota
-                window.open(event.url, '_blank');
-            });
-        });
-    </script>
 </div>

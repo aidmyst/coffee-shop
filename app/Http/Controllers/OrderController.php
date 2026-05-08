@@ -145,7 +145,30 @@ class OrderController extends Controller
             'note'          => $request->note,
         ]);
 
-        // 3. JALUR NINJA KE GOOGLE SHEETS
+        // ================================================================
+        // 3. LOGIKA PEMOTONGAN STOK (HANYA JIKA DARI KASIR / LANGSUNG COMPLETED)
+        // ================================================================
+        if ($isFromKasir) {
+            $cartItems = is_array($request->cart) ? $request->cart : json_decode($request->cart, true);
+
+            foreach ($cartItems as $item) {
+                // Cari menu berdasarkan nama
+                $menu = \App\Models\Menu::where('name', $item['name'])->first();
+
+                if ($menu) {
+                    $qty = $item['quantity'] ?? $item['qty'] ?? 1;
+
+                    // Cek resep dan kurangi stok bahan baku
+                    foreach ($menu->ingredients as $ingredient) {
+                        $totalNeeded = $qty * $ingredient->pivot->quantity_needed;
+                        $ingredient->decrement('stock', $totalNeeded);
+                    }
+                }
+            }
+        }
+        // ================================================================
+
+        // 4. JALUR NINJA KE GOOGLE SHEETS
         try {
             $spreadsheetId = env('POST_SPREADSHEET_ID');
             $client = new \Google\Client();
@@ -154,14 +177,14 @@ class OrderController extends Controller
             $service = new \Google\Service\Sheets($client);
 
             $menuDetails = "";
-            $cartItems = is_array($request->cart) ? $request->cart : json_decode($request->cart, true);
+            $cartItemsSheet = is_array($request->cart) ? $request->cart : json_decode($request->cart, true);
 
-            if (!empty($cartItems)) {
-                foreach ($cartItems as $item) {
+            if (!empty($cartItemsSheet)) {
+                foreach ($cartItemsSheet as $item) {
                     $jumlah = $item['quantity'] ?? $item['qty'] ?? 1;
                     $namaMenu = $item['name'] ?? 'Menu';
-                    $opsi = isset($item['option']) ? " (" . $item['option'] . ")" : ""; // Sesuaikan key 'option'
-                    $sugar = isset($item['sugar']) && $item['sugar'] != '' ? " [" . $item['sugar'] . "]" : "";
+                    $opsi = isset($item['option']) && $item['option'] !== '' ? " (" . $item['option'] . ")" : "";
+                    $sugar = isset($item['sugar']) && $item['sugar'] !== '' ? " [" . $item['sugar'] . "]" : "";
                     $menuDetails .= $namaMenu . $opsi . $sugar . " (x" . $jumlah . ")\n";
                 }
             }
@@ -185,7 +208,7 @@ class OrderController extends Controller
             $msg = "Pesanan berhasil disimpan (Gagal sinkron Sheets)";
         }
 
-        // MODIFIKASI BAGIAN RETURN INI:
+        // 5. RETURN RESPONSE
         if ($request->expectsJson()) {
             // Jika dipanggil oleh menu.blade.php (AJAX kustomer)
             return response()->json([
@@ -205,7 +228,7 @@ class OrderController extends Controller
     public function order()
     {
         // Ambil semua menu dari database
-        $menus = Menu::all();
+        $menus = Menu::with('ingredients')->get();
 
         // UBAH BAGIAN INI: Jangan '01', ubah jadi 'Takeaway' atau kosongkan
         $table_number = 'Takeaway';

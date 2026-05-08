@@ -12,9 +12,9 @@
             <div class="grid grid-cols-12 gap-6">
                 {{-- KIRI: DAFTAR MENU --}}
                 <div class="col-span-7 flex flex-col gap-6">
-                    {{-- SEARCH BAR PINDAH KE SINI --}}
+                    {{-- SEARCH BAR --}}
                     <div
-                        class="bg-white shadow-sm border border-gray-100 rounded-xl p-4 flex items-center gap-3 sticky top-6 z-40">
+                        class="bg-white shadow-sm border border-gray-100 rounded-xl p-3 flex items-center gap-3 sticky top-6 z-40">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -36,9 +36,10 @@
 
                                 <div class="grid grid-cols-2 gap-4">
                                     @foreach ($menus->where('category', $cat) as $menu)
+                                        {{-- REVISI: Pembungkus Card --}}
                                         <div x-show="search === '' || '{{ strtolower($menu->name) }}'.includes(search.toLowerCase())"
-                                            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all flex flex-col h-full group
-                                            {{ !($menu->is_available ?? true) ? 'opacity-60 grayscale select-none' : 'hover:shadow-md hover:border-orange-200' }}">
+                                            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all flex flex-col h-full group 
+                                            {{ $menu->is_available ? 'hover:shadow-md hover:border-orange-200' : 'opacity-60 grayscale pointer-events-none' }}">
 
                                             {{-- Image Container --}}
                                             <div class="aspect-square w-full bg-gray-50 overflow-hidden relative">
@@ -58,7 +59,7 @@
                                                 @endif
 
                                                 {{-- Overlay Stok Habis --}}
-                                                @if (!($menu->is_available ?? true))
+                                                @if (!$menu->is_available)
                                                     <div
                                                         class="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
                                                         <span
@@ -77,26 +78,23 @@
                                                     {{ $menu->name }}
                                                 </div>
 
-                                                {{-- Tombol Tambah (Sesuai Coretan Gambar) --}}
+                                                {{-- REVISI: Tombol Tambah --}}
                                                 <button type="button"
-                                                    @if ($menu->is_available ?? true) @click="openItemModal({
-                                                        id: {{ $menu->id }},
-                                                        name: '{{ $menu->name }}',
-                                                        category: '{{ $menu->category }}',
-                                                        image: '{{ $menu->image ? asset('storage/' . $menu->image) : '' }}',
-                                                        price_hot: {{ $menu->price_hot ?? 0 }},
-                                                        price_ice: {{ $menu->price_ice ?? 0 }}
-                                                    })" @endif
-                                                    class="w-full py-3 px-4 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2
-                                                    {{ !($menu->is_available ?? true)
-                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                        : 'bg-orange-600 text-xs text-white border border-orange-100' }}">
+                                                    @if ($menu->is_available) @click="openItemModal({
+                                                            id: {{ $menu->id }},
+                                                            name: '{{ $menu->name }}',
+                                                            category: '{{ $menu->category }}',
+                                                            image: '{{ $menu->image ? asset('storage/' . $menu->image) : '' }}',
+                                                            price_hot: {{ $menu->price_hot ?? 0 }},
+                                                            price_ice: {{ $menu->price_ice ?? 0 }}
+                                                        })" 
+                                                    @else 
+                                                        disabled @endif
+                                                    class="w-full py-3 px-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2 
+                                                    {{ $menu->is_available ? 'bg-orange-600 text-white border border-orange-100 hover:bg-orange-700 active:scale-95' : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-transparent' }}">
 
-                                                    @if ($menu->is_available ?? true)
-                                                        Tambah
-                                                    @else
-                                                        Habis
-                                                    @endif
+                                                    {{ $menu->is_available ? 'Tambah' : 'Habis' }}
+
                                                 </button>
                                             </div>
                                         </div>
@@ -107,6 +105,7 @@
                     @endforeach
                 </div>
 
+                {{-- ... (BAGIAN KANAN: KERANJANG DAN SCRIPT TETAP SAMA PERSIS SEPERTI MILIKMU) ... --}}
                 {{-- KANAN: KERANJANG --}}
                 <div class="col-span-5 relative">
                     <div class="bg-white p-6 shadow sm:rounded-2xl border sticky top-6 flex flex-col"
@@ -286,145 +285,138 @@
                 </div>
             </div>
         </div>
-    </div>
+        <script>
+            function cartSystem() {
+                return {
+                    cart: [],
+                    openItemModal(item) {
+                        this.selectedItem = item;
+                        this.qty = 1;
+                        this.sugarLevel = 'Normal Sugar';
 
-    <script>
-        function cartSystem() {
-            return {
-                cart: [],
-                openItemModal(item) {
-                    this.selectedItem = item;
-                    this.qty = 1;
-                    this.sugarLevel = 'Normal Sugar';
+                        const name = item.name.toLowerCase();
+                        const cat = item.category;
 
-                    const name = item.name.toLowerCase();
-                    const cat = item.category;
+                        if (name === 'espresso') {
+                            this.tempOption = '';
+                            this.sugarLevel = '';
+                        } else if (cat === 'Snack' || cat === 'Dessert') {
+                            this.tempOption = 'Hot';
+                        } else if (name.includes('lychee') || name === 'cold brew') {
+                            this.tempOption = 'Ice';
+                        } else if (name === 'mineral water' || cat === 'Juice') {
+                            this.tempOption = 'Normal';
+                        } else {
+                            this.tempOption = 'Ice';
+                        }
+                        this.showItemModal = true;
+                    },
 
-                    if (name === 'espresso') {
-                        this.tempOption = ''; // Kosongkan agar tidak muncul di history
-                        this.sugarLevel = ''; // Kosongkan agar tidak muncul di history
-                    } else if (cat === 'Snack' || cat === 'Dessert') {
-                        this.tempOption = 'Hot';
-                    } else if (name.includes('lychee') || name === 'cold brew') {
-                        this.tempOption = 'Ice';
-                    } else if (name === 'mineral water' || cat === 'Juice') {
-                        this.tempOption = 'Normal';
-                    } else {
-                        this.tempOption = 'Ice';
+                    calculateItemPrice() {
+                        if (!this.selectedItem) return 0;
+                        let price = (this.tempOption === 'Ice' && this.selectedItem.price_ice > 0) ?
+                            this.selectedItem.price_ice :
+                            this.selectedItem.price_hot;
+                        return price * this.qty;
+                    },
+
+                    addToCartFromModal() {
+                        let price = (this.tempOption === 'Ice' && this.selectedItem.price_ice > 0) ?
+                            this.selectedItem.price_ice :
+                            this.selectedItem.price_hot;
+
+                        const option = ['Snack', 'Dessert'].includes(this.selectedItem.category) ? '' : this.tempOption;
+
+                        const sugar = (['Coffee', 'Non-Coffee', 'Tea', 'Juice'].includes(this.selectedItem.category) &&
+                                this.selectedItem.name !== 'Espresso' &&
+                                this.selectedItem.name !== 'Mineral Water') ?
+                            this.sugarLevel : '';
+
+                        let exist = this.cart.find(i => i.id === this.selectedItem.id && i.option === option && i.sugar ===
+                            sugar);
+
+                        if (exist) {
+                            exist.qty += this.qty;
+                        } else {
+                            this.cart.push({
+                                id: this.selectedItem.id,
+                                name: this.selectedItem.name,
+                                price: price,
+                                qty: this.qty,
+                                option: option,
+                                sugar: sugar,
+                                category: this.selectedItem.category
+                            });
+                        }
+                        this.showItemModal = false;
+                    },
+
+                    increaseQty(index) {
+                        this.cart[index].qty++
+                    },
+                    decreaseQty(index) {
+                        if (this.cart[index].qty > 1) {
+                            this.cart[index].qty--
+                        } else {
+                            this.cart.splice(index, 1)
+                        }
+                    },
+                    totalPrice() {
+                        return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+                    },
+                    formatOptionSugar(option, sugar, name) {
+                        let parts = [];
+                        const isBasic = name === 'Mineral Water' || name.toLowerCase().includes('juice');
+                        if (option && (isBasic || option !== 'Normal')) parts.push(option);
+                        if (sugar) parts.push(sugar);
+                        return parts.join(' • ');
                     }
-                    this.showItemModal = true;
-                },
-
-                calculateItemPrice() {
-                    if (!this.selectedItem) return 0;
-                    let price = (this.tempOption === 'Ice' && this.selectedItem.price_ice > 0) ?
-                        this.selectedItem.price_ice :
-                        this.selectedItem.price_hot;
-                    return price * this.qty;
-                },
-
-                addToCartFromModal() {
-                    let price = (this.tempOption === 'Ice' && this.selectedItem.price_ice > 0) ?
-                        this.selectedItem.price_ice :
-                        this.selectedItem.price_hot;
-
-                    const option = ['Snack', 'Dessert'].includes(this.selectedItem.category) ? '' : this.tempOption;
-
-                    // Tambahkan 'Juice' ke dalam daftar kategori yang menyimpan data sugar
-                    const sugar = (['Coffee', 'Non-Coffee', 'Tea', 'Juice'].includes(this.selectedItem.category) &&
-                            this.selectedItem.name !== 'Espresso' &&
-                            this.selectedItem.name !== 'Mineral Water') ?
-                        this.sugarLevel : '';
-
-                    // Logic merge item yang sama
-                    let exist = this.cart.find(i => i.id === this.selectedItem.id && i.option === option && i.sugar ===
-                        sugar);
-
-                    if (exist) {
-                        exist.qty += this.qty;
-                    } else {
-                        this.cart.push({
-                            id: this.selectedItem.id,
-                            name: this.selectedItem.name,
-                            price: price,
-                            qty: this.qty,
-                            option: option,
-                            sugar: sugar,
-                            category: this.selectedItem.category
-                        });
-                    }
-                    this.showItemModal = false;
-                },
-
-                increaseQty(index) {
-                    this.cart[index].qty++
-                },
-                decreaseQty(index) {
-                    if (this.cart[index].qty > 1) {
-                        this.cart[index].qty--
-                    } else {
-                        this.cart.splice(index, 1)
-                    }
-                },
-                totalPrice() {
-                    return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-                },
-                formatOptionSugar(option, sugar, name) {
-                    let parts = [];
-                    const isBasic = name === 'Mineral Water' || name.toLowerCase().includes('juice');
-                    if (option && (isBasic || option !== 'Normal')) parts.push(option);
-                    if (sugar) parts.push(sugar);
-                    return parts.join(' • ');
                 }
             }
-        }
-    </script>
-</x-app-layout>
+        </script>
+    </div>
 
-{{-- MODAL SUKSES & PREVIEW NOTA --}}
-@if (session('print_id'))
-    <div x-data="{ open: true }" x-show="open"
-        class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    {{-- MODAL SUKSES & PREVIEW NOTA --}}
+    @if (session('print_id'))
+        <div x-data="{ open: true }" x-show="open"
+            class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
 
-        <div
-            class="bg-white w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-2xl transform transition-all flex flex-col items-center">
+            <div
+                class="bg-white w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-2xl transform transition-all flex flex-col items-center">
 
-            {{-- Icon Sukses Kecil --}}
-            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
-
-            <h3 class="text-lg font-black text-gray-800 mb-1">Pesanan Berhasil!</h3>
-            <p class="text-[11px] text-gray-400 uppercase tracking-widest mb-4">Pratinjau Nota Pesanan</p>
-
-            {{-- AREA NOTA (IFRAME) --}}
-            {{-- Kita masukkan halaman print ke dalam bingkai kecil agar kasir bisa lihat isinya --}}
-            <div class="w-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden mb-6"
-                style="height: 300px;">
-                <iframe id="receiptFrame" src="{{ route('order.print', session('print_id')) }}"
-                    class="w-full h-full border-none shadow-inner"></iframe>
-            </div>
-
-            <div class="flex flex-col w-full gap-2">
-                {{-- Tombol Cetak (Memanggil fungsi print dari iframe) --}}
-                <button @click="document.getElementById('receiptFrame').contentWindow.print();"
-                    class="w-full bg-orange-600 text-white py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-3 shadow-xl shadow-orange-600/30 hover:bg-orange-700 transition-all active:scale-95 uppercase tracking-widest">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7">
                         </path>
                     </svg>
-                    Cetak Nota Sekarang
-                </button>
+                </div>
 
-                {{-- Tombol Lanjut --}}
-                <button @click="open = false"
-                    class="w-full bg-gray-100 text-gray-500 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-200 transition-all">
-                    Tutup & Pesanan Baru
-                </button>
+                <h3 class="text-lg font-black text-gray-800 mb-1">Pesanan Berhasil!</h3>
+                <p class="text-[11px] text-gray-400 uppercase tracking-widest mb-4">Pratinjau Nota Pesanan</p>
+
+                <div class="w-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden mb-6"
+                    style="height: 300px;">
+                    <iframe id="receiptFrame" src="{{ route('order.print', session('print_id')) }}"
+                        class="w-full h-full border-none shadow-inner"></iframe>
+                </div>
+
+                <div class="flex flex-col w-full gap-2">
+                    <button @click="document.getElementById('receiptFrame').contentWindow.print();"
+                        class="w-full bg-orange-600 text-white py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-3 shadow-xl shadow-orange-600/30 hover:bg-orange-700 transition-all active:scale-95 uppercase tracking-widest">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                            </path>
+                        </svg>
+                        Cetak Nota Sekarang
+                    </button>
+
+                    <button @click="open = false"
+                        class="w-full bg-gray-100 text-gray-500 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-200 transition-all">
+                        Tutup
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-@endif
+    @endif
+</x-app-layout>

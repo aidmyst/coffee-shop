@@ -140,24 +140,6 @@
                 </div>
 
                 
-                <div class="flex items-center justify-between px-2">
-                    <label for="remember_me" class="inline-flex items-center cursor-pointer group">
-                        <input id="remember_me" type="checkbox" name="remember"
-                            class="rounded-lg bg-gray-100 border-transparent text-orange-600 shadow-sm focus:ring-orange-500 focus:ring-offset-0 w-5 h-5 transition-all">
-                        <span
-                            class="ms-2 text-xs font-black text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors"><?php echo e(__('Stay Signed In')); ?></span>
-                    </label>
-
-                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Route::has('password.request')): ?>
-                        <a href="<?php echo e(route('password.request')); ?>"
-                            class="text-[10px] font-black text-orange-600 uppercase tracking-widest hover:text-orange-700 transition-colors">
-                            <?php echo e(__('Forgot Access?')); ?>
-
-                        </a>
-                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                </div>
-
-                
                 <div class="pt-2">
                     <button type="submit"
                         class="w-full bg-orange-600 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-orange-600/20 hover:bg-orange-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3">

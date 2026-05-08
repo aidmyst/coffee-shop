@@ -21,14 +21,14 @@
                     <div class="flex items-center gap-4">
                         {{-- Total Selesai --}}
                         <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                            <p class="text-2xl font-black text-orange-600 leading-none">
+                            <p class="text-2xl font-black text-blue-600 leading-none">
                                 {{ $orders->where('status', 'completed')->count() }}
                             </p>
                             <div class="flex flex-col">
                                 <p class="text-[12px] text-gray-400 font-black uppercase tracking-widest leading-tight">
                                     Total Selesai
                                 </p>
-                                <p class="text-[12px] font-bold text-orange-700 uppercase tracking-tighter">
+                                <p class="text-[12px] font-bold text-blue-700 uppercase tracking-tighter">
                                     Pesanan
                                 </p>
                             </div>

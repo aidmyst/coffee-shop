@@ -47,22 +47,34 @@ class Cashier extends Component
         $this->selectedOrder = null;
     }
 
-    // 3. Fungsi saat tombol "Cetak & Selesai" diklik di dalam modal
+    // 3. Fungsi saat tombol "Konfirmasi & Cetak" diklik di dalam modal
     public function processAndPrint()
     {
         if ($this->selectedOrder) {
-            // Ubah status pesanan menjadi completed
+
+            // 1. Ambil data item pesanan dari format JSON
+            $items = json_decode($this->selectedOrder->items);
+
+            // 2. Lakukan pengurangan stok bahan baku
+            foreach ($items as $item) {
+                $menu = \App\Models\Menu::where('name', $item->name)->first();
+
+                if ($menu) {
+                    foreach ($menu->ingredients as $ingredient) {
+                        $totalNeeded = $item->qty * $ingredient->pivot->quantity_needed;
+                        $ingredient->decrement('stock', $totalNeeded);
+                    }
+                }
+            }
+
+            // 3. Ubah status pesanan menjadi completed
             $this->selectedOrder->update(['status' => 'completed']);
 
-            // Simpan ID untuk dikirim ke tab print
-            $orderIdToPrint = $this->selectedOrder->id;
-
-            // Tutup modal dan bersihkan data order yang dipilih
+            // 4. Tutup modal dan bersihkan data order yang dipilih
             $this->showReceiptModal = false;
             $this->selectedOrder = null;
 
-            // Perintah membuka tab baru untuk print (menggunakan route 'order.print' dari web.php)
-            $this->dispatch('open-print-tab', url: route('order.print', $orderIdToPrint));
+            // CATATAN: Baris $this->dispatch('open-print-tab' ...) DIHAPUS karena sudah print dari iframe
         }
     }
 }

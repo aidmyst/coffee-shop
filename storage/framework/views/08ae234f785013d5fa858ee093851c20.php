@@ -45,7 +45,7 @@
             </div>
 
             
-            <span id="pendingBadge" class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            <span id="pendingBadge" class="hidden bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
             </span>
         </a>
 
