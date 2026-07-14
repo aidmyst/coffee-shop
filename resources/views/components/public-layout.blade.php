@@ -9,6 +9,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Solstice Cafe - Menu</title>
+    <link rel="icon" href="{{ asset('storage/images/Solstice.png') }}" type="image/png">
 
     <script src="https://cdn.tailwindcss.com"></script>
 

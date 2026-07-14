@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Solstice Cafe') }}</title>
+    <link rel="icon" href="{{ asset('storage/images/Solstice.png') }}" type="image/png">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -92,6 +93,7 @@
 
         // 2. LISTEN DARI FETCH API (Polling Berbasis ID Terakhir)
         let lastOrderId = null;
+        let lastUpdatedAt = null;
         let firstLoad = true;
 
         async function checkOrders() {
@@ -102,11 +104,14 @@
                 if (!response.ok) return;
                 const data = await response.json();
 
-                if (!firstLoad && data.last_id && data.last_id !== lastOrderId) {
-                    playNotification();
+                if (!firstLoad && data.last_id) {
+                    if (data.last_id !== lastOrderId || data.updated_at !== lastUpdatedAt) {
+                        playNotification();
+                    }
                 }
 
                 lastOrderId = data.last_id;
+                lastUpdatedAt = data.updated_at;
                 firstLoad = false;
             } catch (e) {
                 console.error("Check order error:", e);

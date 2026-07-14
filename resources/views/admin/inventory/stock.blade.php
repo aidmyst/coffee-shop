@@ -1,6 +1,6 @@
 <x-app-layout>
     {{-- UBAH BAGIAN INI (Baris 2-5) --}}
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8" x-data="{
+    <div class="max-w-9xl mx-auto sm:px-6 lg:px-8 py-8" x-data="{
         search: '',
         showEditModal: false,
         editData: { id: '', name: '', category: '', stock: '', min_stock: '', unit: '' }

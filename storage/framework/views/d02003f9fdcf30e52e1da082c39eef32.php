@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
     <title><?php echo e(config('app.name', 'Solstice Cafe')); ?></title>
+    <link rel="icon" href="<?php echo e(asset('storage/images/Solstice.png')); ?>" type="image/png">
 
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 </head>

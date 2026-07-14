@@ -9,72 +9,94 @@ class Cashier extends Component
 {
     public $lastOrderCount = 0;
 
-    // Properti baru untuk Modal Nota
-    public $selectedOrder = null;
-    public $showReceiptModal = false;
+    public $isFirstLoad = true;
 
     public function render()
     {
-        // Ambil data pesanan pending
-        $orders = Order::where('status', 'pending')->orderBy('created_at', 'desc')->get();
+        // Ambil data pesanan: 
+        // 1. Pesanan dari customer (pending, tanpa customer_name)
+        // 2. Pesanan dari POS Kasir yang sudah dibayar (processing)
+        $orders = Order::where(function($query) {
+            $query->where('status', 'pending')->whereNull('customer_name');
+        })->orWhere('status', 'processing')->orderBy('created_at', 'desc')->get();
 
         // Logika Suara: Jika jumlah pesanan bertambah
-        if ($orders->count() > $this->lastOrderCount) {
-            if ($this->lastOrderCount > 0) {
-                // Ganti dispatchBrowserEvent menjadi dispatch
-                $this->dispatch('play-notification-sound');
-            }
+        if (!$this->isFirstLoad && $orders->count() > $this->lastOrderCount) {
+            $this->dispatch('play-notification-sound');
         }
 
         $this->lastOrderCount = $orders->count();
+        $this->isFirstLoad = false;
 
         return view('livewire.cashier', [  // Ini harus sesuai dengan lokasi file .blade.php
             'orders' => $orders
         ]);
     }
 
-    // 1. Fungsi saat tombol "Konfirmasi ➜" diklik di tabel
+    // Fungsi saat tombol "Konfirmasi ➜" diklik di tabel
     public function confirmComplete($id)
     {
-        $this->selectedOrder = Order::find($id);
-        $this->showReceiptModal = true;
-    }
-
-    // 2. Fungsi saat tombol "Batal" diklik di dalam modal
-    public function cancelConfirm()
-    {
-        $this->showReceiptModal = false;
-        $this->selectedOrder = null;
-    }
-
-    // 3. Fungsi saat tombol "Konfirmasi & Cetak" diklik di dalam modal
-    public function processAndPrint()
-    {
-        if ($this->selectedOrder) {
-
+        $order = Order::find($id);
+        
+        if ($order) {
             // 1. Ambil data item pesanan dari format JSON
-            $items = json_decode($this->selectedOrder->items);
+            $items = json_decode($order->items);
 
             // 2. Lakukan pengurangan stok bahan baku
-            foreach ($items as $item) {
-                $menu = \App\Models\Menu::where('name', $item->name)->first();
+            if (!empty($items)) {
+                foreach ($items as $item) {
+                    $menu = \App\Models\Menu::where('name', $item->name ?? $item->nama_menu)->first();
 
-                if ($menu) {
-                    foreach ($menu->ingredients as $ingredient) {
-                        $totalNeeded = $item->qty * $ingredient->pivot->quantity_needed;
-                        $ingredient->decrement('stock', $totalNeeded);
+                    if ($menu) {
+                        $qty = $item->qty ?? $item->quantity ?? 1;
+                        foreach ($menu->ingredients as $ingredient) {
+                            $totalNeeded = $qty * $ingredient->pivot->quantity_needed;
+                            $ingredient->decrement('stock', $totalNeeded);
+                        }
                     }
                 }
             }
 
+            // JALUR NINJA KE GOOGLE SHEETS
+            try {
+                $spreadsheetId = env('POST_SPREADSHEET_ID');
+                if ($spreadsheetId) {
+                    $client = new \Google\Client();
+                    $client->setAuthConfig(storage_path('app/google-access.json'));
+                    $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
+                    $service = new \Google\Service\Sheets($client);
+
+                    $menuDetails = "";
+                    $cartItems = is_string($order->items) ? json_decode($order->items, true) : $order->items;
+                    if (!empty($cartItems)) {
+                        foreach ($cartItems as $item) {
+                            $jumlah = $item['quantity'] ?? $item['qty'] ?? 1;
+                            $namaMenu = $item['name'] ?? 'Menu';
+                            $opsi = isset($item['option']) && $item['option'] !== '' ? " (" . $item['option'] . ")" : "";
+                            $sugar = isset($item['sugar']) && $item['sugar'] !== '' ? " [" . $item['sugar'] . "]" : "";
+                            $menuDetails .= $namaMenu . $opsi . $sugar . " (x" . $jumlah . ")\n";
+                        }
+                    }
+
+                    $labelIdentitas = "Meja " . $order->table_number;
+
+                    $values = [[
+                        $order->updated_at->format('d-m-Y H:i'),
+                        $labelIdentitas,
+                        $order->total_price,
+                        trim($menuDetails),
+                        $order->note ?? '-',
+                    ]];
+
+                    $body = new \Google\Service\Sheets\ValueRange(['values' => $values]);
+                    $service->spreadsheets_values->append($spreadsheetId, 'Sheet1', $body, ['valueInputOption' => 'RAW']);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Jalur Ninja Error: ' . $e->getMessage());
+            }
+
             // 3. Ubah status pesanan menjadi completed
-            $this->selectedOrder->update(['status' => 'completed']);
-
-            // 4. Tutup modal dan bersihkan data order yang dipilih
-            $this->showReceiptModal = false;
-            $this->selectedOrder = null;
-
-            // CATATAN: Baris $this->dispatch('open-print-tab' ...) DIHAPUS karena sudah print dari iframe
+            $order->update(['status' => 'completed']);
         }
     }
 }

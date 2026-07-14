@@ -25,8 +25,9 @@ class OrderController extends Controller
         $selectedDate = $request->input('date', now('Asia/Jakarta')->format('Y-m-d'));
 
         if (Auth::user()->role === 'admin') {
-            // 2. Filter data hanya untuk tanggal yang dipilih
+            // 2. Filter data hanya untuk tanggal yang dipilih dan pesanan yang sudah selesai (dikonfirmasi kasir)
             $orders = Order::whereDate('created_at', $selectedDate)
+                ->where('status', 'completed')
                 ->latest()
                 ->get();
 
@@ -141,34 +142,51 @@ class OrderController extends Controller
             'table_number'  => $request->table_number,
             'items'         => is_array($request->cart) ? json_encode($request->cart) : $request->cart,
             'total_price'   => $request->total_price,
-            'status'        => $isFromKasir ? 'completed' : 'pending',
+            'status'        => 'pending',
             'note'          => $request->note,
         ]);
 
-        // ================================================================
-        // 3. LOGIKA PEMOTONGAN STOK (HANYA JIKA DARI KASIR / LANGSUNG COMPLETED)
-        // ================================================================
+        // 3. JIKA DARI KASIR, GENERATE MIDTRANS SNAP TOKEN
         if ($isFromKasir) {
-            $cartItems = is_array($request->cart) ? $request->cart : json_decode($request->cart, true);
+            // Manual require jika autoloader belum berfungsi
+            if (!class_exists('\Midtrans\Config')) {
+                require_once base_path('vendor/midtrans/midtrans-php/Midtrans.php');
+            }
 
-            foreach ($cartItems as $item) {
-                // Cari menu berdasarkan nama
-                $menu = \App\Models\Menu::where('name', $item['name'])->first();
+            // Konfigurasi Midtrans
+            \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+            \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+            \Midtrans\Config::$isSanitized = true;
+            \Midtrans\Config::$is3ds = true;
 
-                if ($menu) {
-                    $qty = $item['quantity'] ?? $item['qty'] ?? 1;
+            $params = [
+                'transaction_details' => [
+                    'order_id' => 'ORDER-' . $order->id . '-' . time(),
+                    'gross_amount' => $order->total_price,
+                ],
+                'customer_details' => [
+                    'first_name' => $order->customer_name,
+                ]
+            ];
 
-                    // Cek resep dan kurangi stok bahan baku
-                    foreach ($menu->ingredients as $ingredient) {
-                        $totalNeeded = $qty * $ingredient->pivot->quantity_needed;
-                        $ingredient->decrement('stock', $totalNeeded);
-                    }
-                }
+            try {
+                $snapToken = \Midtrans\Snap::getSnapToken($params);
+                return response()->json([
+                    'success' => true,
+                    'snap_token' => $snapToken,
+                    'order_id' => $order->id
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghubungkan ke Midtrans: ' . $e->getMessage()
+                ], 500);
             }
         }
-        // ================================================================
 
-        // 4. JALUR NINJA KE GOOGLE SHEETS
+        // ================================================================
+        // 4. JALUR NINJA KE GOOGLE SHEETS (HANYA CUSTOMER)
+        // ================================================================
         try {
             $spreadsheetId = env('POST_SPREADSHEET_ID');
             $client = new \Google\Client();
@@ -189,7 +207,7 @@ class OrderController extends Controller
                 }
             }
 
-            $labelIdentitas = $isFromKasir ? $order->table_number : "Meja " . $order->table_number;
+            $labelIdentitas = "Meja " . $order->table_number;
 
             $values = [[
                 $order->created_at->format('d-m-Y H:i'),
@@ -201,16 +219,12 @@ class OrderController extends Controller
 
             $body = new \Google\Service\Sheets\ValueRange(['values' => $values]);
             $service->spreadsheets_values->append($spreadsheetId, 'Sheet1', $body, ['valueInputOption' => 'RAW']);
-
-            $msg = $isFromKasir ? "Pesanan atas nama {$order->customer_name} berhasil disimpan!" : "Pesanan berhasil dikirim!";
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Jalur Ninja Error: ' . $e->getMessage());
-            $msg = "Pesanan berhasil disimpan (Gagal sinkron Sheets)";
         }
 
         // 5. RETURN RESPONSE
         if ($request->expectsJson()) {
-            // Jika dipanggil oleh menu.blade.php (AJAX kustomer)
             return response()->json([
                 'success' => true,
                 'message' => 'Pesanan berhasil dikirim!',
@@ -218,12 +232,28 @@ class OrderController extends Controller
             ]);
         }
 
-        // Jika dipanggil oleh order.blade.php (Kasir POS)
-        return redirect()->route('cashier.pos.order')->with([
-            'success' => $msg,
+        return redirect()->back()->with('success', 'Pesanan berhasil dikirim!');
+    }
+
+    public function paymentSuccess(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+
+        if ($order->status === 'processing' || $order->status === 'completed') {
+            return response()->json(['success' => true, 'print_id' => $order->id]);
+        }
+
+        // Hanya ubah status jadi processing. Pemotongan stok dan gsheet dilakukan saat kasir klik Konfirmasi di Dashboard.
+        $order->update(['status' => 'processing']);
+
+        // RETURN RESPONSE
+        return response()->json([
+            'success' => true,
+            'message' => 'Pembayaran berhasil!',
             'print_id' => $order->id
         ]);
     }
+
 
     public function order()
     {

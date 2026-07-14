@@ -10,6 +10,7 @@
 <?php $component->withAttributes([]); ?>
 <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
 
+    <script src="<?php echo e(env('MIDTRANS_IS_PRODUCTION') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js'); ?>" data-client-key="<?php echo e(env('MIDTRANS_CLIENT_KEY')); ?>"></script>
     <div class="py-6" x-data="Object.assign(cartSystem(), {
         showItemModal: false,
         selectedItem: null,
@@ -161,11 +162,7 @@
                             </div>
 
                             <form method="POST" action="<?php echo e(route('order.submit')); ?>" x-data="{ orderType: 'Takeaway' }"
-                                @submit.prevent="
-                                    $event.target.querySelector('[name=cart]').value = JSON.stringify(cart);
-                                    $event.target.querySelector('[name=total_price]').value = totalPrice();
-                                    $event.target.submit();
-                                ">
+                                @submit.prevent="submitOrder($event)">
                                 <?php echo csrf_field(); ?>
 
                                 
@@ -205,9 +202,10 @@
                                 <input type="hidden" name="cart">
                                 <input type="hidden" name="total_price">
 
-                                <button type="submit" :disabled="cart.length === 0"
-                                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl uppercase tracking-widest text-sm disabled:bg-gray-300 shadow-lg shadow-orange-600/20 transition-all active:scale-95">
-                                    Submit Order
+                                <button type="submit" :disabled="cart.length === 0 || isSubmitting"
+                                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl uppercase tracking-widest text-sm disabled:bg-gray-300 shadow-lg shadow-orange-600/20 transition-all active:scale-95 flex justify-center items-center gap-2">
+                                    <span x-show="!isSubmitting">Submit Order</span>
+                                    <span x-show="isSubmitting">Memproses...</span>
                                 </button>
                             </form>
                         </div>
@@ -304,6 +302,8 @@
             function cartSystem() {
                 return {
                     cart: [],
+                    isSubmitting: false,
+                    printId: null,
                     openItemModal(item) {
                         this.selectedItem = item;
                         this.qty = 1;
@@ -385,55 +385,124 @@
                         if (option && (isBasic || option !== 'Normal')) parts.push(option);
                         if (sugar) parts.push(sugar);
                         return parts.join(' • ');
+                    },
+                    
+                    async submitOrder(event) {
+                        if (this.cart.length === 0) return;
+                        
+                        this.isSubmitting = true;
+                        
+                        const form = event.target;
+                        const formData = new FormData(form);
+                        formData.set('cart', JSON.stringify(this.cart));
+                        formData.set('total_price', this.totalPrice());
+                        
+                        try {
+                            const response = await fetch(form.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success && result.snap_token) {
+                                // Trigger Snap
+                                const component = this;
+                                window.snap.pay(result.snap_token, {
+                                    onSuccess: async function(paymentResult) {
+                                        try {
+                                            const successResponse = await fetch('/order/' + result.order_id + '/payment-success', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                                                    'X-Requested-With': 'XMLHttpRequest'
+                                                }
+                                            });
+                                            const successData = await successResponse.json();
+                                            if (successData.success) {
+                                                component.cart = [];
+                                                component.printId = successData.print_id;
+                                            } else {
+                                                alert('Terjadi kesalahan saat memproses status pesanan.');
+                                            }
+                                        } catch(e) {
+                                            alert('Gagal memverifikasi pembayaran.');
+                                        } finally {
+                                            component.isSubmitting = false;
+                                        }
+                                    },
+                                    onPending: function(paymentResult) {
+                                        alert('Pembayaran pending.');
+                                        component.isSubmitting = false;
+                                    },
+                                    onError: function(paymentResult) {
+                                        alert('Pembayaran gagal.');
+                                        component.isSubmitting = false;
+                                    },
+                                    onClose: function() {
+                                        component.isSubmitting = false;
+                                    }
+                                });
+                            } else {
+                                alert(result.message || 'Gagal membuat pesanan');
+                                this.isSubmitting = false;
+                            }
+                        } catch (error) {
+                            alert('Terjadi kesalahan sistem.');
+                            this.isSubmitting = false;
+                        }
                     }
                 }
             }
         </script>
-    </div>
-
     
-    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('print_id')): ?>
-        <div x-data="{ open: true }" x-show="open"
-            class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div x-data="{ open: true }" x-show="printId !== null" x-cloak
+        class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
 
-            <div
-                class="bg-white w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-2xl transform transition-all flex flex-col items-center">
+        <div
+            class="bg-white w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-2xl transform transition-all flex flex-col items-center">
 
-                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7">
+            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7">
+                    </path>
+                </svg>
+            </div>
+
+            <h3 class="text-lg font-black text-gray-800 mb-1">Pesanan Berhasil!</h3>
+            <p class="text-[11px] text-gray-400 uppercase tracking-widest mb-4">Pratinjau Nota Pesanan</p>
+
+            <div class="w-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden mb-6"
+                style="height: 300px;">
+                <iframe id="receiptFrame" :src="printId ? '<?php echo e(url('order/print')); ?>/' + printId : ''"
+                    class="w-full h-full border-none shadow-inner"></iframe>
+            </div>
+
+            <div class="flex flex-col w-full gap-2">
+                <button @click="document.getElementById('receiptFrame').contentWindow.print();"
+                    class="w-full bg-orange-600 text-white py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-3 shadow-xl shadow-orange-600/30 hover:bg-orange-700 transition-all active:scale-95 uppercase tracking-widest">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
                         </path>
                     </svg>
-                </div>
+                    Cetak Nota Sekarang
+                </button>
 
-                <h3 class="text-lg font-black text-gray-800 mb-1">Pesanan Berhasil!</h3>
-                <p class="text-[11px] text-gray-400 uppercase tracking-widest mb-4">Pratinjau Nota Pesanan</p>
-
-                <div class="w-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden mb-6"
-                    style="height: 300px;">
-                    <iframe id="receiptFrame" src="<?php echo e(route('order.print', session('print_id'))); ?>"
-                        class="w-full h-full border-none shadow-inner"></iframe>
-                </div>
-
-                <div class="flex flex-col w-full gap-2">
-                    <button @click="document.getElementById('receiptFrame').contentWindow.print();"
-                        class="w-full bg-orange-600 text-white py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-3 shadow-xl shadow-orange-600/30 hover:bg-orange-700 transition-all active:scale-95 uppercase tracking-widest">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-                            </path>
-                        </svg>
-                        Cetak Nota Sekarang
-                    </button>
-
-                    <button @click="open = false"
-                        class="w-full bg-gray-100 text-gray-500 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-200 transition-all">
-                        Tutup
-                    </button>
-                </div>
+                <button @click="printId = null"
+                    class="w-full bg-gray-100 text-gray-500 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-200 transition-all">
+                    Tutup
+                </button>
             </div>
         </div>
-    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+    </div>
+    
+    <!-- End cartSystem alpine scope -->
+    </div>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>

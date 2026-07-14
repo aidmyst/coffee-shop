@@ -198,57 +198,5 @@
             </div>
         </div>
     </div>
-    
-    
-    
-    <div x-data="{ open: <?php if ((object) ('showReceiptModal') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('showReceiptModal'->value()); ?>')<?php echo e('showReceiptModal'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('showReceiptModal'); ?>')<?php endif; ?> }" x-show="open" x-cloak
-        class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
-
-        <div
-            class="bg-white w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-2xl transform transition-all flex flex-col items-center">
-
-            
-            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7">
-                    </path>
-                </svg>
-            </div>
-
-            <h3 class="text-lg font-black text-gray-800 mb-1">Pesanan Berhasil!</h3>
-            <p class="text-[11px] text-gray-400 uppercase tracking-widest mb-4">Pratinjau Nota Pesanan</p>
-
-            
-            <div class="w-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden mb-6"
-                style="height: 300px;">
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($selectedOrder): ?>
-                    <iframe id="receiptFrame" src="<?php echo e(route('order.print', $selectedOrder->id)); ?>"
-                        class="w-full h-full border-none shadow-inner"></iframe>
-                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-            </div>
-
-            
-            <div class="flex flex-col w-full gap-2">
-                
-                
-                <button
-                    @click="document.getElementById('receiptFrame').contentWindow.print(); setTimeout(() => { $wire.processAndPrint() }, 500);"
-                    class="w-full bg-orange-600 text-white py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-3 shadow-xl shadow-orange-600/30 hover:bg-orange-700 transition-all active:scale-95 uppercase tracking-widest">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-                        </path>
-                    </svg>
-                    Cetak Nota Sekarang
-                </button>
-
-                
-                <button @click="open = false; $wire.cancelConfirm()"
-                    class="w-full bg-gray-100 text-gray-500 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-200 transition-all">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    </div>
 </div>
 <?php /**PATH C:\laragon\www\coffee-shop\resources\views/livewire/cashier.blade.php ENDPATH**/ ?>

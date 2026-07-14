@@ -96,6 +96,7 @@
 
         // 2. LISTEN DARI FETCH API (Polling Berbasis ID Terakhir)
         let lastOrderId = null;
+        let lastUpdatedAt = null;
         let firstLoad = true;
 
         async function checkOrders() {
@@ -106,11 +107,14 @@
                 if (!response.ok) return;
                 const data = await response.json();
 
-                if (!firstLoad && data.last_id && data.last_id !== lastOrderId) {
-                    playNotification();
+                if (!firstLoad && data.last_id) {
+                    if (data.last_id !== lastOrderId || data.updated_at !== lastUpdatedAt) {
+                        playNotification();
+                    }
                 }
 
                 lastOrderId = data.last_id;
+                lastUpdatedAt = data.updated_at;
                 firstLoad = false;
             } catch (e) {
                 console.error("Check order error:", e);

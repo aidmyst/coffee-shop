@@ -34,7 +34,8 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
 
                             @foreach ($filters as $f)
-                                <button @click="activeFilter = '{{ $f }}'"
+                                <button
+                                    @click="activeFilter = '{{ $f }}'; window.scrollTo({ top: 0})"
                                     :class="activeFilter === '{{ $f }}'
                                         ?
                                         'bg-orange-600 text-white shadow-md' :

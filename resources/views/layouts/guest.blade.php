@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Solstice Cafe') }}</title>
+    <link rel="icon" href="{{ asset('storage/images/Solstice.png') }}" type="image/png">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

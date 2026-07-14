@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard Kasir
     Route::get('/dashboard', [OrderController::class, 'adminDashboard'])->name('dashboard');
     Route::post('/orders/{id}/complete', [OrderController::class, 'complete'])->name('orders.complete');
+    Route::post('/order/{id}/payment-success', [OrderController::class, 'paymentSuccess'])->name('order.payment.success');
     Route::get('/cashier/reports/history', [OrderController::class, 'history'])->name('cashier.reports.history');
     Route::get('/cashier/pos/order', [OrderController::class, 'order'])->name('cashier.pos.order');
     Route::get('/order/print/{id}', [OrderController::class, 'print'])->name('order.print');
@@ -81,18 +82,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('/api/check-orders', function () {
-    $lastOrder = Order::where('status', 'pending')
-        ->latest()
+    $lastOrder = Order::where(function($query) {
+        $query->where('status', 'pending')->whereNull('customer_name');
+    })->orWhere('status', 'processing')
+        ->orderBy('updated_at', 'desc')
         ->first();
+        
     return response()->json([
-        'last_id' => $lastOrder?->id
+        'last_id' => $lastOrder?->id,
+        'updated_at' => $lastOrder?->updated_at->timestamp
     ]);
 });
 
 // realtime badge pesanan
 Route::get('/api/pending-orders-count', function () {
+    $count = Order::where(function($query) {
+        $query->where('status', 'pending')->whereNull('customer_name');
+    })->orWhere('status', 'processing')->count();
+    
     return response()->json([
-        'count' => Order::where('status', 'pending')->count()
+        'count' => $count
     ]);
 })->middleware('auth');
 
