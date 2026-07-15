@@ -3,7 +3,7 @@
 
 <head>
     <title>Print Nota #{{ $order->id }}</title>
-    <link rel="icon" href="{{ asset('storage/images/Solstice.png') }}" type="image/png">
+    <link rel="icon" href="{{ url('storage/images/Solstice.png') }}" type="image/png">
     <style>
         /* CSS Normal untuk tampilan di Layar Browser */
         body {

@@ -97,9 +97,9 @@
                                                 @endphp
 
                                                 @if ($isSpecial)
-                                                    {{-- Badge Abu-abu untuk Takeaway / Dine In (Tanpa kata Meja) --}}
+                                                    {{-- Badge Orange untuk Takeaway / Dine In (Tanpa kata Meja) --}}
                                                     <span
-                                                        class="bg-gray-100 text-gray-500 px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                        class="bg-orange-600 text-white px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
                                                         {{ $order->table_number }}
                                                     </span>
                                                 @else

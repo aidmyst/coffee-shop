@@ -87,10 +87,40 @@
                                 <tr wire:key="order-{{ $order->id }}" class="hover:bg-gray-50 transition-colors">
                                     {{-- Kolom Meja --}}
                                     <td class="px-6 py-4 text-center">
-                                        <span
-                                            class="bg-orange-600 text-white px-3 py-1.5 rounded-lg font-black text-xs shadow-sm">
-                                            {{ $order->table_number }}
-                                        </span>
+                                        <div class="flex flex-col items-center gap-1.5">
+                                            {{-- Nama Pelanggan (Jika ada) --}}
+                                            @if (!empty($order->customer_name))
+                                                <span
+                                                    class="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                    {{ $order->customer_name }}
+                                                </span>
+                                            @endif
+
+                                            {{-- Logika Penampilan Meja / Tipe Pesanan --}}
+                                            @if (!empty($order->table_number))
+                                                @php
+                                                    $tableLower = strtolower($order->table_number);
+                                                    $isSpecial = in_array($tableLower, [
+                                                        'takeaway',
+                                                        'dine in',
+                                                        'kasir',
+                                                        'pos',
+                                                    ]);
+                                                @endphp
+
+                                                @if ($isSpecial)
+                                                    <span
+                                                        class="bg-orange-600 text-white px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                        {{ $order->table_number }}
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="bg-orange-600 text-white px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                        Meja {{ $order->table_number }}
+                                                    </span>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
 
                                     {{-- Kolom Waktu --}}
@@ -158,24 +188,35 @@
                                     </td>
 
                                     {{-- Kolom Aksi --}}
-                                    <td class="px-6 py-4 text-center">
-                                        <button wire:click="confirmComplete({{ $order->id }})"
-                                            wire:loading.attr="disabled"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 w-32 flex justify-center items-center mx-auto disabled:opacity-75 disabled:cursor-wait">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-center gap-2">
+                                            {{-- Tombol Batal --}}
+                                            <button wire:click="cancelOrder({{ $order->id }})"
+                                                wire:loading.attr="disabled"
+                                                wire:confirm="Yakin ingin membatalkan pesanan ini?"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex justify-center items-center disabled:opacity-75 disabled:cursor-wait">
+                                                <span wire:loading.remove wire:target="cancelOrder({{ $order->id }})">
+                                                    Batal
+                                                </span>
+                                                <span wire:loading wire:target="cancelOrder({{ $order->id }})" class="animate-pulse">
+                                                    ...
+                                                </span>
+                                            </button>
 
-                                            {{-- Teks Default: Hilang saat proses Livewire berjalan --}}
-                                            <span wire:loading.remove
-                                                wire:target="confirmComplete({{ $order->id }})">
-                                                Konfirmasi ➜
-                                            </span>
+                                            {{-- Tombol Konfirmasi --}}
+                                            <button wire:click="confirmComplete({{ $order->id }})"
+                                                wire:loading.attr="disabled"
+                                                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex justify-center items-center disabled:opacity-75 disabled:cursor-wait">
 
-                                            {{-- Teks Loading: Muncul instan saat tombol diklik --}}
-                                            <span wire:loading wire:target="confirmComplete({{ $order->id }})"
-                                                class="animate-pulse">
-                                                Tunggu...
-                                            </span>
+                                                <span wire:loading.remove wire:target="confirmComplete({{ $order->id }})">
+                                                    Konfirmasi ➜
+                                                </span>
 
-                                        </button>
+                                                <span wire:loading wire:target="confirmComplete({{ $order->id }})" class="animate-pulse">
+                                                    Tunggu...
+                                                </span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

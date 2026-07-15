@@ -113,7 +113,7 @@
                                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isSpecial): ?>
                                                     
                                                     <span
-                                                        class="bg-gray-100 text-gray-500 px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                        class="bg-orange-600 text-white px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
                                                         <?php echo e($order->table_number); ?>
 
                                                     </span>

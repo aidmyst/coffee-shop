@@ -146,42 +146,41 @@ class OrderController extends Controller
             'note'          => $request->note,
         ]);
 
-        // 3. JIKA DARI KASIR, GENERATE MIDTRANS SNAP TOKEN
-        if ($isFromKasir) {
-            // Manual require jika autoloader belum berfungsi
-            if (!class_exists('\Midtrans\Config')) {
-                require_once base_path('vendor/midtrans/midtrans-php/Midtrans.php');
-            }
+        // 3. GENERATE MIDTRANS SNAP TOKEN UNTUK SEMUA PESANAN (KASIR & CUSTOMER)
+        if (!class_exists('\Midtrans\Config')) {
+            require_once base_path('vendor/midtrans/midtrans-php/Midtrans.php');
+        }
 
-            // Konfigurasi Midtrans
-            \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-            \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
-            \Midtrans\Config::$isSanitized = true;
-            \Midtrans\Config::$is3ds = true;
+        // Konfigurasi Midtrans
+        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
 
-            $params = [
-                'transaction_details' => [
-                    'order_id' => 'ORDER-' . $order->id . '-' . time(),
-                    'gross_amount' => $order->total_price,
-                ],
-                'customer_details' => [
-                    'first_name' => $order->customer_name,
-                ]
+        $customerName = $order->customer_name ? $order->customer_name : 'Meja ' . $order->table_number;
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => 'ORDER-' . $order->id . '-' . time(),
+                'gross_amount' => $order->total_price,
+            ],
+            'customer_details' => [
+                'first_name' => $customerName,
+            ]
+        ];
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+            $midtransResponse = [
+                'success' => true,
+                'snap_token' => $snapToken,
+                'order_id' => $order->id
             ];
-
-            try {
-                $snapToken = \Midtrans\Snap::getSnapToken($params);
-                return response()->json([
-                    'success' => true,
-                    'snap_token' => $snapToken,
-                    'order_id' => $order->id
-                ]);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menghubungkan ke Midtrans: ' . $e->getMessage()
-                ], 500);
-            }
+        } catch (\Exception $e) {
+            $midtransResponse = [
+                'success' => false,
+                'message' => 'Gagal menghubungkan ke Midtrans: ' . $e->getMessage()
+            ];
         }
 
         // ================================================================
@@ -207,7 +206,7 @@ class OrderController extends Controller
                 }
             }
 
-            $labelIdentitas = "Meja " . $order->table_number;
+            $labelIdentitas = $order->customer_name ? $order->customer_name . " (Meja " . $order->table_number . ")" : "Meja " . $order->table_number;
 
             $values = [[
                 $order->created_at->format('d-m-Y H:i'),
@@ -225,11 +224,17 @@ class OrderController extends Controller
 
         // 5. RETURN RESPONSE
         if ($request->expectsJson()) {
-            return response()->json([
+            $responseData = [
                 'success' => true,
                 'message' => 'Pesanan berhasil dikirim!',
                 'order_id' => $order->id
-            ]);
+            ];
+
+            if (isset($midtransResponse)) {
+                $responseData = array_merge($responseData, $midtransResponse);
+            }
+
+            return response()->json($responseData);
         }
 
         return redirect()->back()->with('success', 'Pesanan berhasil dikirim!');

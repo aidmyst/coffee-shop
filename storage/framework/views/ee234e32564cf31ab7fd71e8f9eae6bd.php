@@ -87,11 +87,43 @@
                                 <tr <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'order-'.e($order->id).''; ?>wire:key="order-<?php echo e($order->id); ?>" class="hover:bg-gray-50 transition-colors">
                                     
                                     <td class="px-6 py-4 text-center">
-                                        <span
-                                            class="bg-orange-600 text-white px-3 py-1.5 rounded-lg font-black text-xs shadow-sm">
-                                            <?php echo e($order->table_number); ?>
+                                        <div class="flex flex-col items-center gap-1.5">
+                                            
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($order->customer_name)): ?>
+                                                <span
+                                                    class="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                    <?php echo e($order->customer_name); ?>
 
-                                        </span>
+                                                </span>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                                            
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($order->table_number)): ?>
+                                                <?php
+                                                    $tableLower = strtolower($order->table_number);
+                                                    $isSpecial = in_array($tableLower, [
+                                                        'takeaway',
+                                                        'dine in',
+                                                        'kasir',
+                                                        'pos',
+                                                    ]);
+                                                ?>
+
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isSpecial): ?>
+                                                    <span
+                                                        class="bg-orange-600 text-white px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                        <?php echo e($order->table_number); ?>
+
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span
+                                                        class="bg-orange-600 text-white px-3 py-1 rounded-lg font-black text-[10px] shadow-sm uppercase tracking-widest">
+                                                        Meja <?php echo e($order->table_number); ?>
+
+                                                    </span>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                        </div>
                                     </td>
 
                                     
@@ -164,24 +196,35 @@
                                     </td>
 
                                     
-                                    <td class="px-6 py-4 text-center">
-                                        <button wire:click="confirmComplete(<?php echo e($order->id); ?>)"
-                                            wire:loading.attr="disabled"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 w-32 flex justify-center items-center mx-auto disabled:opacity-75 disabled:cursor-wait">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-center gap-2">
+                                            
+                                            <button wire:click="cancelOrder(<?php echo e($order->id); ?>)"
+                                                wire:loading.attr="disabled"
+                                                wire:confirm="Yakin ingin membatalkan pesanan ini?"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex justify-center items-center disabled:opacity-75 disabled:cursor-wait">
+                                                <span wire:loading.remove wire:target="cancelOrder(<?php echo e($order->id); ?>)">
+                                                    Batal
+                                                </span>
+                                                <span wire:loading wire:target="cancelOrder(<?php echo e($order->id); ?>)" class="animate-pulse">
+                                                    ...
+                                                </span>
+                                            </button>
 
                                             
-                                            <span wire:loading.remove
-                                                wire:target="confirmComplete(<?php echo e($order->id); ?>)">
-                                                Konfirmasi ➜
-                                            </span>
+                                            <button wire:click="confirmComplete(<?php echo e($order->id); ?>)"
+                                                wire:loading.attr="disabled"
+                                                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex justify-center items-center disabled:opacity-75 disabled:cursor-wait">
 
-                                            
-                                            <span wire:loading wire:target="confirmComplete(<?php echo e($order->id); ?>)"
-                                                class="animate-pulse">
-                                                Tunggu...
-                                            </span>
+                                                <span wire:loading.remove wire:target="confirmComplete(<?php echo e($order->id); ?>)">
+                                                    Konfirmasi ➜
+                                                </span>
 
-                                        </button>
+                                                <span wire:loading wire:target="confirmComplete(<?php echo e($order->id); ?>)" class="animate-pulse">
+                                                    Tunggu...
+                                                </span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>

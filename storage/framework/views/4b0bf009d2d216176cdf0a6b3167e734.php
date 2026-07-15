@@ -3,6 +3,7 @@
 
 <head>
     <title>Print Nota #<?php echo e($order->id); ?></title>
+    <link rel="icon" href="<?php echo e(url('storage/images/Solstice.png')); ?>" type="image/png">
     <style>
         /* CSS Normal untuk tampilan di Layar Browser */
         body {

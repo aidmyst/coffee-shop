@@ -13,12 +13,10 @@ class Cashier extends Component
 
     public function render()
     {
-        // Ambil data pesanan: 
-        // 1. Pesanan dari customer (pending, tanpa customer_name)
-        // 2. Pesanan dari POS Kasir yang sudah dibayar (processing)
-        $orders = Order::where(function($query) {
-            $query->where('status', 'pending')->whereNull('customer_name');
-        })->orWhere('status', 'processing')->orderBy('created_at', 'desc')->get();
+        // Ambil data pesanan yang sudah dibayar (processing)
+        $orders = Order::where('status', 'processing')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         // Logika Suara: Jika jumlah pesanan bertambah
         if (!$this->isFirstLoad && $orders->count() > $this->lastOrderCount) {
@@ -78,7 +76,7 @@ class Cashier extends Component
                         }
                     }
 
-                    $labelIdentitas = "Meja " . $order->table_number;
+                    $labelIdentitas = $order->customer_name ? $order->customer_name . " (Meja " . $order->table_number . ")" : "Meja " . $order->table_number;
 
                     $values = [[
                         $order->updated_at->format('d-m-Y H:i'),
@@ -97,6 +95,16 @@ class Cashier extends Component
 
             // 3. Ubah status pesanan menjadi completed
             $order->update(['status' => 'completed']);
+        }
+    }
+
+    // Fungsi saat tombol "Batal" diklik di tabel
+    public function cancelOrder($id)
+    {
+        $order = Order::find($id);
+        
+        if ($order) {
+            $order->delete();
         }
     }
 }
